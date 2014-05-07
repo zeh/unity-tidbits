@@ -8,8 +8,8 @@ While the Kongregate API is relatively simple to implement, most of the implemen
 Usage
 -----
 
-1. Copy the `KongregateAPI.cs` to your Unity project's "Scripts" folder
-2. Anywhere in your code (e.g. your "Main" class), create an instance of the KongregateAPI:
+1. Copy the **KongregateAPI.cs** file to your Unity project's "Scripts" folder
+2. Anywhere in your code (e.g. your `Main` game class), create an instance of the KongregateAPI:
 <pre>KongregateAPI kongregate = KongregateAPI.Create();</pre>
 3. Whenever you need to submit statistics, do:
 <pre>kongregate.SubmitStats(name, value);</pre>
@@ -21,14 +21,12 @@ kongregate.SubmitStats("tanks-destroyed", 1);</pre>
 Full Interface
 --------------
 
- * `Create()` (Static): creates a `KongregateAPI` instance and returns it (automatically creating a `GameObject`).
-
+ * `Create()` (Static): creates a `KongregateAPI` instance and returns it (automatically creating a `GameObject` for itself so it can receive events).
+ * `SubmitStats(string name, int value)`: submit statistics to the Kongregate API.
  * bool `isConnected`: returns whether the user is properly connected to the Kongregate site API.
  * int `userId`: id of the current user.
  * string `userName`: name of the current yser.
  * string `gameAuthToken`: token for game authorization.
- 
- * `SubmitStats(string name, int value)`: submit statistics to the Kongregate API.
 
 Debugging
 ---------
@@ -37,9 +35,9 @@ In general, you don't need to do anything special for your code to work on Kongr
 
 Notice, however, that:
 
- * This won't work from Unity testing; because Kongregate API is JavaScript-based in their side, it needs to be running inside their website.
- * Testing on the pre-publish screen won't work either (the `kongregate` object is not instantiated). The API only works when your game is properly published.
- * If you want to make sure your game is working with the API, go to its published page, add `?debug_level=4` to the URL of the game and reload the page. This makes the JavaScript console (F12 on Chrome) output what the API is receiving from your game. You can then make sure the API calls are being received.
+ * This won't work when testing your game inside Unity; the Kongregate API depends on JavaScript located on their website.
+ * Testing on the pre-publish screen won't work either (the `kongregate` object is not instantiated). The API only works after your game is properly published.
+ * If you want to make sure your game is working with the API, go to its published page, add `?debug_level=4` to the URL of the game, and reload the page. This makes the JavaScript console (F12 on Chrome) output what the API is receiving from your game.
 
 Caveats
 -------
