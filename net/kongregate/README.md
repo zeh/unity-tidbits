@@ -11,16 +11,20 @@ Usage
 1. Copy the `KongregateAPI.cs` to your Unity project's "Scripts" folder
 2. Anywhere in your code (e.g. your "Main" class), create an instance of the KongregateAPI:
 
+<!-- fix for code -->
+
 	KongregateAPI kongregate = KongregateAPI.Create();
 
 3. Whenever you need to submit statistics, do:
+
+<!-- fix for code -->
 
 	kongregate.SubmitStats(name, value);
 
 For example:
 
-	kongregateAPI.SubmitStats("high-score", 1000);
-	kongregateAPI.SubmitStats("tanks-destroyed", 1);
+	kongregate.SubmitStats("high-score", 1000);
+	kongregate.SubmitStats("tanks-destroyed", 1);
 
 
 Full Interface
