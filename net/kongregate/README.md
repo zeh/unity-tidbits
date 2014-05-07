@@ -23,10 +23,10 @@ Full Interface
 
  * `Create()` (Static): creates a `KongregateAPI` instance and returns it (automatically creating a `GameObject` for itself so it can receive events).
  * `SubmitStats(string name, int value)`: submit statistics to the Kongregate API.
- * bool `isConnected`: returns whether the user is properly connected to the Kongregate site API.
- * int `userId`: id of the current user.
- * string `userName`: name of the current yser.
- * string `gameAuthToken`: token for game authorization.
+ * bool `isConnected`: returns whether the user is properly connected to the Kongregate site API. Read-only.
+ * int `userId`: id of the current user. Read-only.
+ * string `userName`: name of the current user. Read-only.
+ * string `gameAuthToken`: game authorization token. Read-only.
 
 Debugging
 ---------
