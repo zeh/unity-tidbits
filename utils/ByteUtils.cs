@@ -3,6 +3,11 @@ using UnityEngine;
 
 public class ByteUtils {
 
+	public enum Endian {
+		LITTLE_ENDIAN,
+		BIG_ENDIAN
+	}
+
 	/**
 	 * Writes a short (Int16) to a byte array.
 	 * This is an aux function used when creating the WAV data.
