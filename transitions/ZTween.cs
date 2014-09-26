@@ -230,7 +230,7 @@ class ZTween {
 		}
 
 		internal Func<float, float> getTransition(Func<float, float> transition) {
-			return transition == null ? Equations.none : transition;
+			return transition == null ? Easing.none : transition;
 		}
 
 	}
