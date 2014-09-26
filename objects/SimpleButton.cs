@@ -16,7 +16,11 @@ public class SimpleButton:MonoBehaviour {
 	// ================================================================================================================
 	// MAIN EVENT INTERFACE -------------------------------------------------------------------------------------------
 
-	// http://docs.unity3d.com/ScriptReference/MonoBehaviour.html
+	// Gives warnings on Android:
+	// "Game scripts or other custom code contains OnMouse_ event handlers. Presence of such handlers might impact performance on handheld devices."
+
+	// Use separate events?
+	// http://wiki.unity3d.com/index.php/OnMouseDown
 
 	void OnMouseDown() {
 		// Called when the user has pressed the mouse button while over the GUIElement or Collider.
@@ -31,12 +35,14 @@ public class SimpleButton:MonoBehaviour {
 	void OnMouseEnter() {
 		// Called when the mouse entered the GUIElement or Collider.
 		_isPointerOver = true;
+		if (_isPressed) animatePress();
 		animateOver();
 	}
 
 	void OnMouseExit() {
 		// Called when the mouse is not any longer over the GUIElement or Collider.
 		_isPointerOver = false;
+		if (_isPressed) animateRelease();
 		animateOut();
 	}
 
