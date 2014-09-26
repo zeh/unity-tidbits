@@ -23,6 +23,14 @@ class ZTween {
 	 * 
 	 */
 
+	/**
+	 * Examples:
+	 * .call(() => logDone("over"))
+	 * // Getter/setter, for function pairs
+	 * ZTween.use(getValue, setValue).valueTo(1.0f, 1, Easing.quadOut).call(() => logDone("value ok"));
+	 * // Lambdas, for getter-setter or member pairs
+	 * ZTween.use(() => testNum, x => testNum = x).valueTo(1.0f, 1, Easing.quadOut).call(() => logDone("value ok"));
+	 */
 
 	/*
 	//transform.localScale = new Vector3(2, 2, 2);
@@ -425,6 +433,7 @@ class ZTween {
 		private float duration;
 		private Vector3 startValue;
 		private Vector3 targetValue;
+		private Vector3 tempValue;
 		private Func<float, float> transition;
 
 		// Extension functions
@@ -437,10 +446,12 @@ class ZTween {
 
 		public void start() {
 			this.startValue = target.transform.localScale;
+			this.tempValue = new Vector3();
 		}
 
 		public void update(float t) {
-			target.transform.localScale = Vector3.Lerp(startValue, targetValue, transition(t));
+			MathUtils.applyLerp(startValue, targetValue, transition(t), ref tempValue);
+			target.transform.localScale = tempValue;
 		}
 
 		public void end() {
@@ -484,6 +495,7 @@ class ZTween {
 		private float duration;
 		private Vector3 startValue;
 		private Vector3 targetValue;
+		private Vector3 tempValue;
 		private Func<float, float> transition;
 
 		// Extension functions
@@ -496,10 +508,12 @@ class ZTween {
 
 		public void start() {
 			this.startValue = target.transform.localPosition;
+			this.tempValue = new Vector3();
 		}
 
 		public void update(float t) {
-			target.transform.localPosition = Vector3.Lerp(startValue, targetValue, transition(t));
+			MathUtils.applyLerp(startValue, targetValue, transition(t), ref tempValue);
+			target.transform.localPosition = tempValue;
 		}
 
 		public void end() {
@@ -511,4 +525,20 @@ class ZTween {
 		}
 	}
 
+	// Auxiliary functions
+
+	class MathUtils {
+		public static float lerp(float start, float end, float t) {
+			// Lerp: needed because Mathf.lerp clamps between 0 and 1
+			return start + (end - start) * t;
+		}
+
+		public static void applyLerp(Vector3 start, Vector3 end, float t, ref Vector3 receiver) {
+			// Lerp: needed because Mathf.lerp clamps between 0 and 1
+			// Dumps into a target to avoid GC
+			receiver.x = start.x + (end.x - start.x) * t;
+			receiver.y = start.y + (end.y - start.y) * t;
+			receiver.z = start.z + (end.z - start.z) * t;
+		}
+	}
 }
