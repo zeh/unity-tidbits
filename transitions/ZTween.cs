@@ -197,7 +197,7 @@ class ZTween {
 
 				bool shouldUpdateOnce = isPlaying;
 
-				while (shouldUpdateOnce) {
+				while (shouldUpdateOnce && currentStep < sequenceSteps.Count) {
 					shouldUpdateOnce = false;
 
 					if (Time.time >= sequenceStepsMetadatas[currentStep].timeStart) {
