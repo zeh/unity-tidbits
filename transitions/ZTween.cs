@@ -282,22 +282,22 @@ class ZTween {
 		// PUBLIC INTERFACE -----------------------------------------------------------------------------------------------
 
 		public ZTweenGameObjectSequence scaleFrom(Vector3 scale) {
-			addStep(new ZTweenStepScaleFrom(scale));
+			addStep(new ZTweenStepScaleFrom(targetGameObject, scale));
 			return this;
 		}
 
 		public ZTweenGameObjectSequence scaleTo(Vector3 scale, float duration = 0, Func<float, float> transition = null) {
-			addStep(new ZTweenStepScaleTo(scale, duration, getTransition(transition)));
+			addStep(new ZTweenStepScaleTo(targetGameObject, scale, duration, getTransition(transition)));
 			return this;
 		}
 
 		public ZTweenGameObjectSequence moveFrom(Vector3 scale) {
-			addStep(new ZTweenStepPositionFrom(scale));
+			addStep(new ZTweenStepPositionFrom(targetGameObject, scale));
 			return this;
 		}
 
 		public ZTweenGameObjectSequence moveTo(Vector3 scale, float duration = 0, Func<float, float> transition = null) {
-			addStep(new ZTweenStepPositionTo(scale, duration, getTransition(transition)));
+			addStep(new ZTweenStepPositionTo(targetGameObject, scale, duration, getTransition(transition)));
 			return this;
 		}
 
@@ -374,15 +374,15 @@ class ZTween {
 			this.transition = transition;
 		}
 
-		public void start(GameObject target) {
+		public void start() {
 			this.startValue = targetGet();
 		}
 
-		public void update(GameObject target, float t) {
-			targetSet(Mathf.Lerp(startValue, targetValue, transition(t)));
+		public void update(float t) {
+			targetSet(MathUtils.lerp(startValue, targetValue, transition(t)));
 		}
 
-		public void end(GameObject target) {
+		public void end() {
 			targetSet(targetValue);
 		}
 
