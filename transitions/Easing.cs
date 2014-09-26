@@ -22,8 +22,8 @@ public class Easing {
 	 */
 
 	// Constants
-	private static const float HALF_PI = (float)(Math.PI / 2.0);
-	private static const float TWO_PI = (float)(Math.PI * 2.0);
+	private const float HALF_PI = (float)(Math.PI / 2.0);
+	private const float TWO_PI = (float)(Math.PI * 2.0);
 
 	/**
 	 * Easing equation function for a simple linear tweening, with no easing.
@@ -228,7 +228,7 @@ public class Easing {
 	 * @param	p			Period.
 	 * @return				The new value/phase (0-1).
 	 */
-	public static float elasticIn(float t, float a = 0, float p = 0.3f) {
+	public static float elasticIn(float t, float a, float p) {
 		if (t==0) return 0;
 		if (t==1) return 1;
 		float s;
@@ -242,13 +242,20 @@ public class Easing {
 	}
 
 	/**
+	 * Overloads are used instead of optional arguments just so the function call works as a valid Func<float> type
+	 */
+	public static float elasticIn(float t) {
+		return elasticIn(t, 0, 0.3f);
+	}
+
+	/**
 	 * Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.
 	 *
 	 * @param	t			Current time/phase (0-1).
 	 * @param	a			Amplitude.
 	 * @param	p			Period.
 	 */
-	public static float elasticOut(float t, float a = 0, float p = 0.3f) {
+	public static float elasticOut(float t, float a, float p) {
 		if (t==0) return 0;
 		if (t==1) return 1;
 		float s;
@@ -262,14 +269,29 @@ public class Easing {
 	}
 
 	/**
+	 * Overloads are used instead of optional arguments just so the function call works as a valid Func<float> type
+	 */
+	public static float elasticOut(float t) {
+		return elasticOut(t, 0, 0.3f);
+	}
+
+
+	/**
 	 * Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
 	 *
 	 * @param	t			Current time/phase (0-1).
 	 * @param	s			Overshoot ammount: higher s means greater overshoot (0 produces cubic easing with no overshoot, and the default value of 1.70158 produces an overshoot of 10 percent).
 	 * @param	p			Period.
 	 */
-	public static float backIn(float t, float s = 1.70158f) {
+	public static float backIn(float t, float s) {
 		return t*t*((s+1.0f)*t - s);
+	}
+
+	/**
+	 * Overloads are used instead of optional arguments just so the function call works as a valid Func<float> type
+	 */
+	public static float backIn(float t) {
+		return backIn(t, 1.70158f);
 	}
 
 	/**
@@ -279,9 +301,16 @@ public class Easing {
 	 * @param	s			Overshoot ammount: higher s means greater overshoot (0 produces cubic easing with no overshoot, and the default value of 1.70158 produces an overshoot of 10 percent).
 	 * @param	p			Period.
 	 */
-	public static float backOut(float t, float s = 1.70158f) {
+	public static float backOut(float t, float s) {
 		t--;
 		return t*t*((s+1.0f)*t + s) + 1.0f;
+	}
+
+	/**
+	 * Overloads are used instead of optional arguments just so the function call works as a valid Func<float> type
+	 */
+	public static float backOut(float t) {
+		return backOut(t, 1.70158f);
 	}
 
 	public static float backInOut(float t) {
