@@ -86,7 +86,7 @@ class ZTween {
 		}
 	}
 
-	interface IZTweenStep {
+	internal interface IZTweenStep {
 		void start();
 		void update(float t);
 		void end();
