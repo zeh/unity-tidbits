@@ -2,9 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
+#if UNITY_EDITOR
 [ExecuteInEditMode()]
+#endif
 
 public class Line:MonoBehaviour {
 
@@ -53,6 +57,8 @@ public class Line:MonoBehaviour {
 	// ================================================================================================================
 	// EDITOR INTERFACE -----------------------------------------------------------------------------------------------
 
+	#if UNITY_EDITOR
+
 	[MenuItem("GameObject/Create Other/Line")]
 	static void CreateNew() {
 		// Create the actual object
@@ -82,6 +88,8 @@ public class Line:MonoBehaviour {
 		Selection.objects = new GameObject[] { newObject };
 		//Selection.activeTransform = gameObject.transform;
 	}
+
+	#endif
 
 
 
