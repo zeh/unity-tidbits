@@ -1,6 +1,10 @@
 ﻿using System;
 using UnityEngine;
 
+#if UNITY_EDITOR
+[ExecuteInEditMode()]
+#endif
+
 public class TextMeshSharpener:MonoBehaviour {
 
 	/*
