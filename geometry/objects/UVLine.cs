@@ -10,7 +10,7 @@ using UnityEditor;
 [ExecuteInEditMode()]
 #endif
 
-public class Line:MonoBehaviour {
+public class UVLine:MonoBehaviour {
 
 	/*
 	A line with an origin point: set start and end vectors. Uv mapping is adjusted
@@ -77,7 +77,7 @@ public class Line:MonoBehaviour {
 		newObject.AddComponent<MeshRenderer>();
 
 		// Attach script
-		Line newLineScript = newObject.AddComponent<Line>();
+		UVLine newLineScript = newObject.AddComponent<UVLine>();
 		newLineScript.start = new Vector2(0, 0);
 		newLineScript.end = new Vector2(10, 0);
 
