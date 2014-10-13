@@ -2,48 +2,52 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using UnityEngine;
 
 class PersistentData {
 	/*
-	Saves and loads data in a simpler fashion
-	* Uses System I/O when possible, or PlayerPrefs in web version
-	* Uses singleton access, no instantiation or references necessary
+	Saves and loads persistent user data in a simple but safer fashion, with more features.
 
-	* Advantages to PlayerPrefs:
-	* Allow defaults
+	* Uses system file I/O when possible, or PlayerPrefs when running web version
+	* Uses singleton-ish access (based on itds), no instantiation or references necessary
+
+	Advantages over PlayerPrefs:
+	* Allow defaults when reading
 	* Also save/load bools, double, long
-	* No collision of data when using persistent data instances
+	* Allow byte arrays (as base64 encoded data in UserPrefs, normal byte array when using file I/O)
+	* No collision of data when using across different objects (using own persistentdata instances)
 	* faster?
 
 	How to:
-	PersistentData pd = PersistentData.getInstance();
+	// Create/get instance
+	PersistentData pd = PersistentData.getInstance(); // global
+	PersistentData pd = PersistentData.getInstance("something"); // Custom name
  
 	// Read/write:
 	pd.SetString("name", "dude");
 	var str = pd.GetString("name");
 
+ 	pd.SetBytes("name", new byte[] {...});
+	byte[] bytes = pd.GetBytes("name");
+
 	// Options:
-	pd.cacheValues = true; // Save primitive values in memory for faster access
+	pd.cacheValues = true;		// Save primitive values in memory for faster access (default true)
+	pd.cacheByteArrays = true;	// Save byte array values in memory for faster access (default false) (untested)
 
 	
 	// Good example of another solution (that tries to replace playerprefs): http://www.previewlabs.com/wp-content/uploads/2014/04/PlayerPrefs.cs
 	
-	TODO:
-	* Save/write byte array
+	TODO/test:
 	* Save/write serializable object
 	* More secure/encrypted writing (use StringUtils.encodeRC4 ?)
-	* Save all custom objects to a single file (so it's faster)
 	* Save/load lists? test
 	* First read may be too slow. Test
-	* save/load serializable objects
 	* add date time objects?
-	* Use SystemInfo.deviceUniqueIdentifier.Substring for key? would not allow carrying over though
+	* Use SystemInfo.deviceUniqueIdentifier.Substring for key? would not allow carrying data over devices though
 	* Make sure files are deleted on key removal/clear
 	* Use compression? System.IO.Compression.GZipStream
-	* It is NOT safe when executing DeleteAll on web: will delete *everything* from PlayerPrefs (use hashmap?)
 	*/
 
 	// Constant properties
@@ -52,6 +56,7 @@ class PersistentData {
 	private const string FIELD_NAME_KEYS = "keys";
 	private const string FIELD_NAME_VALUES = "values";
 	private const string FIELD_NAME_TYPES = "types";
+	private const string FIELD_NAME_BYTE_ARRAY_KEYS = "byteArrayKeys";
 	
 	private const string FIELD_TYPE_BOOLEAN = "b";
 	private const string FIELD_TYPE_FLOAT = "f";
@@ -59,6 +64,7 @@ class PersistentData {
 	private const string FIELD_TYPE_INT = "i";
 	private const string FIELD_TYPE_LONG = "l";
 	private const string FIELD_TYPE_STRING = "s";
+	private const string FIELD_TYPE_BYTE_ARRAY = "y";
 	//private static const string FIELD_TYPE_OBJECT = "o"; // Non-primitive
 
 	// Properties
@@ -66,13 +72,14 @@ class PersistentData {
 	private string _name;							// Instance name
 
 	private bool _cacheData;						// Whether primitives (ints, floats, etc) should be cached
-	//private bool cacheObjects;					// Whether serializable objects should be cached
+	private bool _cacheByteArrays;					// Whether serializable objects should be cached
 
 	private Hashtable dataToBeWritten;				// Data that is waiting to be written: ints, floats, strings, and objects as serialized strings; key, value
-	//private List<string> dataToBeDeleted;			// Data that is waiting to be deleted from the system
+	private List<string> byteArraysToBeDeleted;			// Data that is waiting to be deleted from the system
 	private Hashtable cachedData;					// All items that have been cached
 
 	private List<string> dataKeys;					// Keys of all ids used
+	private List<string> byteArrayKeys;				// Keys of all byte array ids used
 
 
 	// ================================================================================================================
@@ -90,13 +97,15 @@ class PersistentData {
 		_name = name;
 		namePrefix = getMD5("p_" + _name) + "_";
 		_cacheData = true;
-		//cacheObjects = false;
+		_cacheByteArrays = false;
+
 		dataToBeWritten = new Hashtable();
-		//dataToBeDeleted = new List<String>();
+		byteArraysToBeDeleted = new List<String>();
 		cachedData = new Hashtable();
 		PersistentData.addInstance(this);
 
 		dataKeys = loadStringList(FIELD_NAME_KEYS);
+		byteArrayKeys = loadStringList(FIELD_NAME_BYTE_ARRAY_KEYS);
 
 		//Debug.Log("PD keys ==> (" + dataKeys.Count + ") " + dataKeys);
 		//foreach (var item in dataKeys) Debug.Log("     [" + item + "]");
@@ -147,6 +156,10 @@ class PersistentData {
 		return dataKeys.Contains(key) ? getValue<string>(key) : defaultValue;
 	}
 
+	public byte[] GetBytes(string key) {
+		return byteArrayKeys.Contains(key) ? getValueBytes(key) : null;
+	}
+
 	/*
 	public T GetObject<T>(string key, T defaultValue = default(T)) {
 		return dataKeys.Contains(key) ? deserializeObject(getValue<object>(key)) : defaultValue;
@@ -185,6 +198,11 @@ class PersistentData {
 		if (_cacheData) cachedData.Remove(key);
 	}
 
+	public void SetBytes(string key, byte[] value) {
+		dataToBeWritten[key] = value;
+		if (_cacheData) cachedData.Remove(key);
+	}
+
 	/*
 	public void SetObject(string key, Object serializableObject) {
 		data[key] = serializeObject(serializableObject);
@@ -197,7 +215,10 @@ class PersistentData {
 	public void Clear() {
 		dataKeys.Clear();
 		dataToBeWritten.Clear();
-		//dataToBeDeleted.Clear();
+		while (byteArrayKeys.Count > 0) {
+			byteArraysToBeDeleted.Add(byteArrayKeys[0]);
+			byteArrayKeys.RemoveAt(0);
+		}
 		ClearCache();
 		Save(true);
 	}
@@ -210,15 +231,18 @@ class PersistentData {
 		dataKeys.Remove(key);
 		dataToBeWritten.Remove(key);
 		cachedData.Remove(key);
-		//dataToBeDeleted.Add(key);
+		if (byteArrayKeys.Contains(key)) {
+			byteArrayKeys.Remove(key);
+			byteArraysToBeDeleted.Add(key);
+		}
 	}
 
 	public bool HasKey(string key) {
-		return dataKeys.Contains(key) || dataToBeWritten.Contains(key);
+		return dataKeys.Contains(key) || byteArrayKeys.Contains(key) || dataToBeWritten.Contains(key);
 	}
 	
 	public void Save(bool forced = false) {
-		if (dataToBeWritten.Count > 0 || forced) {
+		if (dataToBeWritten.Count > 0 || byteArraysToBeDeleted.Count > 0 || forced) {
 			// Some fields need to be saved
 
 			// Read all existing values
@@ -237,29 +261,42 @@ class PersistentData {
 				fieldValue = enumerator.Value;
 				fieldType = getFieldType(fieldValue);
 
-				if (dataKeys.Contains(fieldKey)) {
-					// Replacing a key
-					pos = dataKeys.IndexOf(fieldKey);
-					dataValues[pos] = Convert.ToString(fieldValue);
-					dataTypes[pos] = fieldType;
-				} else {
-					// Adding a key
-					dataKeys.Add(fieldKey);
-					dataValues.Add(Convert.ToString(fieldValue));
-					dataTypes.Add(fieldType);
-				}
+				//Debug.Log("Saving => [" + fieldValue + "] of type [" + fieldType + "]");
 
-				// TODO: remove dataToBeDeleted if necessary (objects?)
+				if (fieldType == FIELD_TYPE_BYTE_ARRAY) {
+					//Debug.Log("  Saving as byte array");
+					// Byte array
+					if (!byteArrayKeys.Contains(fieldKey)) {
+						// Adding a key
+						byteArrayKeys.Add(fieldKey);
+					}
+					setSavedBytes(fieldKey, (byte[])fieldValue);
+				} else {
+					//Debug.Log("  Saving as native array");
+					// Primitive data
+					if (dataKeys.Contains(fieldKey)) {
+						// Replacing a key
+						pos = dataKeys.IndexOf(fieldKey);
+						dataValues[pos] = Convert.ToString(fieldValue);
+						dataTypes[pos] = fieldType;
+					} else {
+						// Adding a key
+						dataKeys.Add(fieldKey);
+						dataValues.Add(Convert.ToString(fieldValue));
+						dataTypes.Add(fieldType);
+					}
+				}
 			}
 
-			// Finally, write everything
+			dataToBeWritten.Clear();
+
+			// Write primitives
 			StringBuilder builderFieldKeys = new StringBuilder();
 			StringBuilder builderFieldValues = new StringBuilder();
 			StringBuilder builderFieldTypes = new StringBuilder();
 
-			//Debug.Log("SAVING => " + dataKeys.Count + " items");
-
 			for (int i = 0; i < dataKeys.Count; i++) {
+				//Debug.Log("Adding data key [" + i + "] for [" + dataKeys[i] + "]");
 				if (i > 0) {
 					builderFieldKeys.Append(SERIALIZATION_SEPARATOR);
 					builderFieldValues.Append(SERIALIZATION_SEPARATOR);
@@ -274,8 +311,23 @@ class PersistentData {
 			setSavedString(FIELD_NAME_VALUES, builderFieldValues.ToString());
 			setSavedString(FIELD_NAME_TYPES, builderFieldTypes.ToString());
 
-			dataToBeWritten.Clear();
-			//dataToBeDeleted.Clear();
+			// Write byte array keys
+			StringBuilder builderByteArrayKeys = new StringBuilder();
+
+			for (int i = 0; i < byteArrayKeys.Count; i++) {
+				if (i > 0) {
+					builderByteArrayKeys.Append(SERIALIZATION_SEPARATOR);
+				}
+				builderByteArrayKeys.Append(encodeString(byteArrayKeys[i]));
+			}
+
+			setSavedString(FIELD_NAME_BYTE_ARRAY_KEYS, builderByteArrayKeys.ToString());
+
+			// Clears deleted byte arrays
+			foreach (var key in byteArraysToBeDeleted) {
+				clearSavedStringsOrBytes(key);
+			}
+			byteArraysToBeDeleted.Clear();
 		}
 	}
 
@@ -292,7 +344,21 @@ class PersistentData {
 		set {
 			if (_cacheData != value) {
 				_cacheData = value;
-				if (!_cacheData) ClearCache();
+				if (!_cacheData) {
+					foreach (var key in dataKeys) cachedData.Remove(key);
+				}
+			}
+		}
+	}
+
+	public bool cacheByteArrays {
+		get { return _cacheByteArrays; }
+		set {
+			if (_cacheByteArrays != value) {
+				_cacheByteArrays = value;
+				if (!_cacheByteArrays) {
+					foreach (var key in byteArrayKeys) cachedData.Remove(key);
+				}
 			}
 		}
 	}
@@ -327,17 +393,13 @@ class PersistentData {
 	}
 
 	private T getValue<T>(string key) {
-		// Returns the value of a given field, cast to the required type
+		// Returns the value of a given primitive field, cast to the required type
 
 		// If waiting to be saved, return it
-		if (dataToBeWritten.ContainsKey(key)) {
-			return (T)dataToBeWritten[key];
-		}
+		if (dataToBeWritten.ContainsKey(key)) return (T)dataToBeWritten[key];
 
 		// If already cached, return it
-		if (_cacheData && cachedData.ContainsKey(key)) {
-			return (T)cachedData[key];
-		}
+		if (_cacheData && cachedData.ContainsKey(key)) return (T)cachedData[key];
 
 		// Read previously saved data
 		var pos = dataKeys.IndexOf(key);
@@ -346,22 +408,27 @@ class PersistentData {
 
 		// Save to cache
 		if (_cacheData) cachedData[key] = value;
-		/*
-		if (fieldType == FIELD_TYPE_OBJECT) {
-			// Object
-			if (cacheObjects) cachedData[key] = value;
-		} else {
-			// Primitive
-			if (cachePrimitives) cachedData[key] = value;
-		}
-		 * */
 
 		return value;
-
-		// Not found, use type default (should never happen?)
-		//return default(T);
 	}
 
+	private byte[] getValueBytes(string key) {
+		// Returns the value of a given byte[] field
+
+		// If waiting to be saved, return it
+		if (dataToBeWritten.ContainsKey(key)) return (byte[])dataToBeWritten[key];
+
+		// If already cached, return it
+		if (_cacheData && cachedData.ContainsKey(key)) return (byte[])cachedData[key];
+
+		// Read previously saved data
+		byte[] value = getSavedBytes(key);
+
+		// Save to cache
+		if (_cacheByteArrays) cachedData[key] = value;
+
+		return value;
+	}
 
 	private string getMD5(string src) {
 		// Basic MD5 for short-ish name uniqueness
@@ -399,6 +466,7 @@ class PersistentData {
 		if (fieldType == FIELD_TYPE_FLOAT)		return Convert.ToSingle(fieldValue);
 		if (fieldType == FIELD_TYPE_DOUBLE)		return Convert.ToDouble(fieldValue);
 		if (fieldType == FIELD_TYPE_STRING)		return (object)fieldValue.ToString();
+		//if (fieldType == FIELD_TYPE_BYTE_ARRAY)	return (object)fieldValue.ToString();
 		//if (fieldType == FIELD_TYPE_OBJECT)		return (object)fieldValue.ToString();
 
 		Debug.LogError("Unsupported type for conversion: [" + fieldType + "]");
@@ -414,6 +482,7 @@ class PersistentData {
 		if (realFieldType == "System.Single")	return FIELD_TYPE_FLOAT;
 		if (realFieldType == "System.Double")	return FIELD_TYPE_DOUBLE;
 		if (realFieldType == "System.String")	return FIELD_TYPE_STRING;
+		if (realFieldType == "System.Byte[]")	return FIELD_TYPE_BYTE_ARRAY;
 		return null;
 	}
 	
@@ -452,6 +521,40 @@ class PersistentData {
 		PlayerPrefs.Save();
 	}
 	 * */
+
+	private void clearSavedStringsOrBytes(string name) {
+		// Removes a byte array or string that has been saved previously
+		// Save a string to some persistent data system
+		#if UNITY_WEBPLAYER
+			// Using PlayerPrefs
+			PlayerPrefs.DeleteKey(getKeyForName(name));
+		#else
+			// Using a file
+			deleteFile(getKeyForName(name));
+		#endif
+	}
+
+	private byte[] getSavedBytes(string name) {
+		// Reads a byte array that has been saved previously
+		#if UNITY_WEBPLAYER
+			// Using PlayerPrefs
+			return Convert.FromBase64String(PlayerPrefs.GetString(getKeyForName(name)));
+		#else
+			// Using a file
+			return loadFileAsBytes(getKeyForName(name));
+		#endif
+	}
+
+	private void setSavedBytes(string name, byte[] value) {
+		// Save a string to some persistent data system
+		#if UNITY_WEBPLAYER
+			// Using PlayerPrefs
+			PlayerPrefs.SetString(getKeyForName(name), Convert.ToBase64String(value));
+		#else
+			// Using a file
+			saveBytesToFile(getKeyForName(name), value);
+		#endif
+	}
 
 	private string getSavedString(string name) {
 		// Reads a string that has been saved previously
@@ -534,20 +637,35 @@ class PersistentData {
 	}
 	*/
 
+	private void deleteFile(string filename) {
+		File.Delete(Application.persistentDataPath + "/" + filename);
+	}
+
 	private void saveStringToFile(string filename, string content) {
 		BinaryFormatter formatter = new BinaryFormatter();
 		FileStream file = File.Create(Application.persistentDataPath + "/" + filename);
-		
+		formatter.Serialize(file, content);
+		file.Close();
+	}
+
+	private void saveBytesToFile(string filename, byte[] content) {
+		BinaryFormatter formatter = new BinaryFormatter();
+		FileStream file = File.Create(Application.persistentDataPath + "/" + filename);
 		formatter.Serialize(file, content);
 		file.Close();
 	}
 
 	private string loadFileAsString(string filename) {
-		object obj = loadFile(filename);
+		object obj = loadFileAsObject(filename);
 		return obj == null ? "" : (string) obj;
 	}
 
-	private object loadFile(string filename) {
+	private byte[] loadFileAsBytes(string filename) {
+		object obj = loadFileAsObject(filename);
+		return obj == null ? null : (byte[]) obj;
+	}
+
+	private object loadFileAsObject(string filename) {
 		string filePath = Application.persistentDataPath + "/" + filename;
 		if (File.Exists(filePath)) {
 			BinaryFormatter formatter = new BinaryFormatter();
