@@ -172,7 +172,7 @@ class ValueList {
 			ids.RemoveAt(ids.Count - 1);
 			group = getGroupInternal(ids);
 		} else {
-			Debug.LogError("ValueList :: Value path [" + keyPath + "] is empty!");
+			Debug.LogWarning("ValueList :: Value path [" + keyPath + "] is empty!");
 			return default(T);
 		}
 
@@ -181,7 +181,7 @@ class ValueList {
 		} else if (group.hasItem(itemKey)) {
 			return (T)group.getItem(itemKey).getValue();
 		} else {
-			Debug.LogError("ValueList :: Value path key [" + keyPath + "] doesn't exist!");
+			Debug.LogWarning("ValueList :: Value path key [" + keyPath + "] doesn't exist!");
 			return default(T);
 		}
 	}
@@ -197,7 +197,7 @@ class ValueList {
 			group = getGroupInternal(ids, true);
 			group.addItem(itemKey, valueItem);
 		} else {
-			Debug.LogError("ValueList :: Value path [" + keyPath + "] is empty!");
+			Debug.LogWarning("ValueList :: Value path [" + keyPath + "] is empty!");
 		}
 	}
 
@@ -214,7 +214,7 @@ class ValueList {
 				currentGroup = currentGroup.getGroup(keyPath[i]);
 			} else {
 				// Doesn't exist, fail
-				Debug.LogError("ValueList :: Value path [" + string.Join(ID_HYERARCHY_SEPARATOR, keyPath.ToArray()) + "] doesn't exist!");
+				Debug.LogWarning("ValueList :: Value path [" + string.Join(ID_HYERARCHY_SEPARATOR, keyPath.ToArray()) + "] doesn't exist!");
 				return null;
 			}
 		}
