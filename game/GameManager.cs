@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-class GameManager : MonoBehaviour {
+class GameManager:MonoBehaviour {
 			
 	// Properties
 	private GameTimer _timer;
