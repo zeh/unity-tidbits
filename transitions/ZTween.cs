@@ -47,7 +47,6 @@ class ZTween {
 	#region ZTween static interface
 
 	// Static properties
-	private static bool isInited = false;
 	private static ZTweenSurrogate tweenSurrogate;
 
 
@@ -55,12 +54,10 @@ class ZTween {
 	// PUBLIC STATIC INTERFACE ----------------------------------------------------------------------------------------
 
 	public static ZTweenGameObjectSequence use(GameObject gameObject) {
-		if (!isInited) init();
 		return new ZTweenGameObjectSequence(gameObject);
 	}
 
 	public static ZTweenGetterSetterSequence use(Func<float> getValueFunction, Action<float> setValueFunction) {
-		if (!isInited) init();
 		return new ZTweenGetterSetterSequence(getValueFunction, setValueFunction);
 	}
 
@@ -68,8 +65,7 @@ class ZTween {
 	// ================================================================================================================
 	// PRIVATE STATIC INTERFACE ---------------------------------------------------------------------------------------
 
-	private static void init() {
-		isInited = true;
+	static ZTween() {
 		GameObject surrogateObject = new GameObject("ZTween-controller");
 		tweenSurrogate = surrogateObject.AddComponent<ZTweenSurrogate>();
 	}
