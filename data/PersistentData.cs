@@ -52,6 +52,7 @@ class PersistentData {
 
 	// Constant properties
 	private static Dictionary<string, PersistentData> dataGroups;
+
 	private const string SERIALIZATION_SEPARATOR = ",";
 	private const string FIELD_NAME_KEYS = "keys";
 	private const string FIELD_NAME_VALUES = "values";
@@ -93,7 +94,7 @@ class PersistentData {
 	// ================================================================================================================
 	// CONSTRUCTOR ----------------------------------------------------------------------------------------------------
 
-	public PersistentData(string name) {
+	public PersistentData(string name = "") {
 		_name = name;
 		namePrefix = getMD5("p_" + _name) + "_";
 		_cacheData = true;
@@ -106,9 +107,14 @@ class PersistentData {
 
 		dataKeys = loadStringList(FIELD_NAME_KEYS);
 		byteArrayKeys = loadStringList(FIELD_NAME_BYTE_ARRAY_KEYS);
+	}
 
-		//Debug.Log("PD keys ==> (" + dataKeys.Count + ") " + dataKeys);
+	public void Debug_Log() {
+		// Temp!
+		Debug.Log("Primitive keys ==> (" + dataKeys.Count + ") " + string.Join(",", dataKeys.ToArray()));
+		Debug.Log("Byte array keys ==> (" + byteArrayKeys.Count + ") " + string.Join(",", byteArrayKeys.ToArray()));
 		//foreach (var item in dataKeys) Debug.Log("     [" + item + "]");
+		foreach (var key in byteArrayKeys) Debug.Log("     [" + key + "] = " + System.Text.Encoding.UTF8.GetString(GetBytes(key)));
 	}
 
 
@@ -387,6 +393,25 @@ class PersistentData {
 	}
 	*/
 
+	/*
+	private byte[] serializeObject(object serializableObject) {
+		// Returns a serializable object as a byte array
+
+		BinaryFormatter formatter = new BinaryFormatter();
+		using(memoryStream) {
+			formatter.Serialize(memoryStream, serializableObject);
+		}
+		//return Convert.ToBase64String(memoryStream.ToArray());
+		return memoryStream.ToArray();
+	}
+
+	private T deserializeObject<T>(byte[] source) {
+		// Creates a serializable object from a string
+		BinaryFormatter formatter = new BinaryFormatter();
+		return formatter.Deserialize(source);
+	}
+	*/
+
 	private string getKeyForName(string name) {
 		// Return a field name that is specific to this instance
 		return namePrefix + name.Replace(".", "_").Replace("/", "_").Replace("\\", "_");
@@ -485,42 +510,6 @@ class PersistentData {
 		if (realFieldType == "System.Byte[]")	return FIELD_TYPE_BYTE_ARRAY;
 		return null;
 	}
-	
-	/*
-	private byte[] serializeObject(object serializableObject) {
-		// Returns a serializable object as a byte array
-
-		BinaryFormatter formatter = new BinaryFormatter();
-		using(memoryStream) {
-			formatter.Serialize(memoryStream, serializableObject);
-		}
-		//return Convert.ToBase64String(memoryStream.ToArray());
-		return memoryStream.ToArray();
-	}
-
-	private T deserializeObject<T>(byte[] source) {
-		// Creates a serializable object from a string
-		BinaryFormatter formatter = new BinaryFormatter();
-		return formatter.Deserialize(source);
-	}
-	
-	private void saveToPlayerPrefs() {
-		// Save everything with regular PlayerPrefs
-
-		// Write primitives
-		PlayerPrefs.SetString(getKeyForName(FIELD_NAME_PRIMITIVES), getPrimitivesAsString())
-
-		// Write object list
-		var objectKeys = getListOfObjectKeys();
-		PlayerPrefs.SetString(getKeyForName(FIELD_NAME_OBJECTS), string.Join(SERIALIZATION_SEPARATOR, objectKeys))
-		foreach (var objectKey in ObjectKeys) {
-			PlayerPrefs.SetString(getKeyForName(objectKey), Convert.ToBase64String(data[objectKey]))
-		}
-		
-		// Save all fields
-		PlayerPrefs.Save();
-	}
-	 * */
 
 	private void clearSavedStringsOrBytes(string name) {
 		// Removes a byte array or string that has been saved previously
@@ -578,65 +567,6 @@ class PersistentData {
 		#endif
 	}
 
-	/*
-	private void loadFromPlayerPrefs() {
-		// Read primitives
-		string primitiveData = PlayerPrefs.GetString(getKeyForName(FIELD_NAME_PRIMITIVES));
-		string[] fields = primitiveData.Split(new string[] {separator});
-
-		for (int i = 0; i < fields.Count; i += 3) {
-			data.Add(decodeString(fields[i]), getValueAsType(decodeString(fields[i+1]), decodeString(fields[i+2])));
-		}
-		
-		// Read object keys
-		string objectsData = PlayerPrefs.GetString(getKeyForName(FIELD_NAME_OBJECTS));
-		string[] objectKeys = objectsData.Split(new string[] {separator});
-		string objectKey;
-
-		// Read actual object list
-		for (int i = 0; i < fields.Count; i += 3) {
-			objectKey = objectKeys[i];
-			data.Add(objectKey, Convert.FromBase64String(PlayerPrefs.GetString(getKeyForName(objectKey)));
-		}
-	}
-
-	private void saveToFiles() {
-		// Save everything with binary files
-		
-		// Write primitives
-		saveFile(getKeyForName(FIELD_NAME_PRIMITIVES), getPrimitivesAsString())
-
-		// Write object list
-		var objectKeys = getListOfObjectKeys();
-		saveFile(getKeyForName(FIELD_NAME_OBJECTS), string.Join(SERIALIZATION_SEPARATOR, objectKeys))
-		foreach (var objectKey in ObjectKeys) {
-			saveFile(getKeyForName(objectKey), data[objectKey])
-		}
-	}
-	
-	private loadFromFiles() {
-		// Load from binary files
-		// Read primitives
-		string primitiveData = loadFileAsString(getKeyForName(FIELD_NAME_PRIMITIVES));
-		string[] fields = primitiveData.Split(new string[] {separator});
-
-		for (int i = 0; i < fields.Count; i += 3) {
-			data.Add(decodeString(fields[i]), getValueAsType(decodeString(fields[i+1]), decodeString(fields[i+2])));
-		}
-		
-		// Read object keys
-		string objectsData = loadFileAsString(getKeyForName(FIELD_NAME_OBJECTS));
-		string[] objectKeys = objectsData.Split(new string[] {separator});
-		string objectKey;
-
-		// Read actual object list
-		for (int i = 0; i < fields.Count; i += 3) {
-			objectKey = objectKeys[i];
-			data.Add(objectKey, loadFile(PlayerPrefs.GetString(getKeyForName(objectKey)));
-		}
-	}
-	*/
-
 	private void deleteFile(string filename) {
 		File.Delete(Application.persistentDataPath + "/" + filename);
 	}
@@ -676,61 +606,4 @@ class PersistentData {
 		}
 		return null;
 	}
-
-	/*
-	private string getPrimitivesAsString() {
-		// Create a list of all fields (key, value, type) as a string separated by SERIALIZATION_SEPARATOR
-		IDictionaryEnumerator enumerator = data.GetEnumerator();
-		System.Text.StringBuilder primitiveDataBuilder = new System.Text.StringBuilder();
-		bool started = false;
-		string primitiveFieldType, fieldType;
-
-		while (enumerator.MoveNext()) {
-			primitiveFieldType = enumerator.Value.GetType();
-			fieldType = "";
-
-			// TODO: use "is" ? 
-			if (primitiveFieldType == "System.Boolean")	{
-				fieldType = FIELD_TYPE_BOOLEAN;
-			} else if (primitiveFieldType == "System.Int32") {
-				fieldType = FIELD_TYPE_INT;
-			} else if (primitiveFieldType == "System.Int64") {
-				fieldType = FIELD_TYPE_LONG;
-			} else if (primitiveFieldType == "System.Single") {
-				fieldType = FIELD_TYPE_FLOAT;
-			} else if (primitiveFieldType == "System.Double") {
-				fieldType = FIELD_TYPE_DOUBLE;
-			} else if (primitiveFieldType == "System.String") {
-				fieldType = FIELD_TYPE_STRING;
-			} else {
-				continue;
-			}
-			
-			// Primitive
-			if (started) sb.Append(SERIALIZATION_SEPARATOR);
-			primitiveDataBuilder.Append(encodeString(enumerator.Key.ToString());
-			primitiveDataBuilder.Append(SERIALIZATION_SEPARATOR);
-			primitiveDataBuilder.Append(encodeString(enumerator.Value.ToString());
-			primitiveDataBuilder.Append(SERIALIZATION_SEPARATOR);
-			primitiveDataBuilder.Append(encodeString(fieldType);
-			started = true;
-		}
-		
-		return primitiveDataBuilder.ToString();
-	}
-	
-	private List<string> getListOfObjectKeys() {
-		// Returns a list of all the keys that contain objects
-		var objectKeys = new List<string>();
-		
-		IDictionaryEnumerator enumerator = data.GetEnumerator();
-		while (enumerator.MoveNext()) {
-			// TODO: use "is" ? 
-			if (enumerator.Value.GetType().Name == "Byte[]") objectKeys.Add(encodeString(enumerator.Key.ToString()));
-		}
-		
-		return objectKeys;
-	}
-	*/
-
 }
