@@ -401,7 +401,7 @@ public class JSON {
 
 		i = 0;
 		
-		//Debug.Log("Decoding Object ------");
+		// Debug.Log("Decoding Object ------ [" + input + "]");
 
 		bool mustEnd = false;
 
@@ -512,7 +512,7 @@ public class JSON {
 						i--;
 					} else if (c == STRUCTURE_STRING_DELIMITER) {
 						// Starting a key name
-//								trace ("  --> starting a key name @ ",__input.Length-i);
+						//Debug.Log("-> starting a key name");
 						parsingName = "";
 						parsingType = ParsingType.KeyName;
 					}
@@ -520,10 +520,12 @@ public class JSON {
 				case ParsingType.ValueObjectPostItem:
 					//Debug.Log("STATE: VALUE OBJECT POST ITEM");
 					if (c == STRUCTURE_VALUE_SEPARATOR) {
-						// Starting a new object
+						// Starting a new item
+						//Debug.Log("--> --> new object item");
 						parsingType = ParsingType.ValueObjectPreItem;
 					} else if (c == STRUCTURE_END_OBJECT) {
 						// Ending object
+						//Debug.Log("--> --> ending object of len " + (i+1));
 						mustEnd = true;
 						returnObject.value = parsingObject;
 						returnObject.length = i+1;
@@ -574,7 +576,7 @@ public class JSON {
 						parsingType = ParsingType.PostKeyName;
 					} else {
 						// Continuing the key name
-						//Debug.Log("-> continuing key name @ " + i);
+						//Debug.Log("-> continuing key name @ " + i + " = [" + parsingName + "]");
 						parsingName += c;
 					}
 					break;
@@ -599,6 +601,8 @@ public class JSON {
 
 			i++;
 		}
+
+		//Debug.Log("Returning object ------ [" + returnObject.value + "] with length [" + returnObject.length + "]");
 
 		return returnObject;
 	}
