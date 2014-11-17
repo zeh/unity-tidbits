@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 /**
@@ -43,6 +43,11 @@ public class JSON {
    An implementation may set limits on the length and character contents
    of strings.
 	*/
+
+	// Configuration flags
+	// Cannot be enum... makes the comparison too verbose later
+	//private static readonly bool USE_SINGLE_TYPE_LIST = true;					// Attempt to create arrays of single types by checking all properties inside
+	public static readonly int FLAG_REMOVE_COMMENTS = 1;
 
 	// Constants for parsing
 	private const char STRUCTURE_BEGIN_ARRAY		= '[';
@@ -159,21 +164,21 @@ public class JSON {
 	// ================================================================================================================
 	// PUBLIC STATIC INTERFACE ----------------------------------------------------------------------------------------
 
-	public static object parse(string input) {
-		return decodeObject(input).value;
+	public static object parse(string input, int flags = 0) {
+		return decodeObject(input, flags).value;
 	}
 
-	public static T parseAs<T>(string input) where T:new() {
+	public static T parseAs<T>(string input, int flags = 0) where T:new() {
 		// Decodes an input as a target object
-		return convertObject<T>(parse(input));
+		return convertObject<T>(parse(input, flags));
 	}
 
-	public static Dictionary<string, object> parseAsDictionary(string input) {
-		return (Dictionary<string, object>)decodeObject(input).value;
+	public static Dictionary<string, object> parseAsDictionary(string input, int flags = 0) {
+		return (Dictionary<string, object>)decodeObject(input, flags).value;
 	}
 
-	public static List<object> parseAsArray(string input) {
-		return (List<object>)decodeObject(input).value;
+	public static List<object> parseAsArray(string input, int flags = 0) {
+		return (List<object>)decodeObject(input, flags).value;
 	}
 
 	public static string stringify(Dictionary<string, object> input, bool prettyPrint = false) {
@@ -372,10 +377,16 @@ public class JSON {
 		// ToDate ?
 	}
 	
-	private static ParsedJSONValue decodeObject(string input) {
+	private static ParsedJSONValue decodeObject(string input, int flags = 0) {
 		// Decodes a string object into a ParsedJSONValue containing an array, a string, a number, of a literal
 		int i;
 		char c;
+
+		if ((flags & FLAG_REMOVE_COMMENTS) == FLAG_REMOVE_COMMENTS) {
+			// Remove the comment and reset the flag
+			flags -= FLAG_REMOVE_COMMENTS;
+			input = Regex.Replace(input, "/\\*[\\w\\W]*?\\*/", "");
+		}
 
 		ParsedJSONValue returnObject = new ParsedJSONValue();
 
@@ -533,7 +544,7 @@ public class JSON {
 
 						// Value that must be added to this object
 						// Everything that comes after is a new value that must be added to this object
-						parsedObject = decodeObject(input.Substring(i));
+						parsedObject = decodeObject(input.Substring(i), flags);
 
 						i += parsedObject.length-1;
 						(parsingObject as List<object>).Add(parsedObject.value);
@@ -574,7 +585,7 @@ public class JSON {
 						//Debug.Log("-> found key name separator (:) @ " + i);
 
 						// Find value that must be added to this object
-						parsedObject = decodeObject(input.Substring(i));
+						parsedObject = decodeObject(input.Substring(i + 1), flags);
 
 						i += parsedObject.length-1;
 						((Dictionary<string, object>)parsingObject)[parsingName] = parsedObject.value;
