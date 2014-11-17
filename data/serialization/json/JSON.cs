@@ -24,6 +24,8 @@ public class JSON {
 
 	Test:
 	* Encoding array
+	* Empty arrays
+	* Empty objects
 	* Unicode, proper high char
 	* Empty strings, arrays, objects
 	* Use heavy JSOn from JSON test suite: https://code.google.com/p/json-test-suite/
@@ -436,21 +438,18 @@ public class JSON {
 					} else if (c == VALUE_LITERAL_NULL[0] && compareStringValue(VALUE_LITERAL_NULL, input, i)) {
 						// Starting "null"
 						//Debug.Log("-> starting null @ " + i);
-						i += VALUE_LITERAL_NULL.Length - 1;
 						mustEnd = true;
 						returnObject.value = null;
 						returnObject.length = i + VALUE_LITERAL_NULL.Length;
 					} else if (c == VALUE_LITERAL_TRUE[0] && compareStringValue(VALUE_LITERAL_TRUE, input, i)) {
 						// Starting "true"
 						//Debug.Log("-> starting boolean true @ " + i);
-						i += VALUE_LITERAL_TRUE.Length - 1;
 						mustEnd = true;
 						returnObject.value = true;
 						returnObject.length = i + VALUE_LITERAL_TRUE.Length;
 					} else if (c == VALUE_LITERAL_FALSE[0] && compareStringValue(VALUE_LITERAL_FALSE, input, i)) {
 						// Starting "false"
 						//Debug.Log("-> starting boolean false @ " + i);
-						i += VALUE_LITERAL_FALSE.Length - 1;
 						mustEnd = true;
 						returnObject.value = false;
 						returnObject.length = i + VALUE_LITERAL_FALSE.Length;
@@ -587,8 +586,10 @@ public class JSON {
 						// Find value that must be added to this object
 						parsedObject = decodeObject(input.Substring(i + 1), flags);
 
-						i += parsedObject.length-1;
+						i += parsedObject.length;
 						((Dictionary<string, object>)parsingObject)[parsingName] = parsedObject.value;
+
+						//Debug.Log("-> object created has length " + parsedObject.length);
 
 						parsingType = ParsingType.ValueObjectPostItem;
 						parsingName = null;
