@@ -6,7 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using UnityEngine;
 
-class PersistentData {
+public class PersistentData {
 	/*
 	Saves and loads persistent user data in a simple but safer fashion, with more features.
 
@@ -166,11 +166,9 @@ class PersistentData {
 		return byteArrayKeys.Contains(key) ? getValueBytes(key) : null;
 	}
 
-	/*
-	public T GetObject<T>(string key, T defaultValue = default(T)) {
-		return dataKeys.Contains(key) ? deserializeObject(getValue<object>(key)) : defaultValue;
+	public T GetObject<T>(string key) {
+		return byteArrayKeys.Contains(key) ? (T)deserializeObject(getValueBytes(key)) : default(T);
 	}
-	 */
 	
 	// Set
 
@@ -209,12 +207,9 @@ class PersistentData {
 		if (_cacheData) cachedData.Remove(key);
 	}
 
-	/*
-	public void SetObject(string key, Object serializableObject) {
-		data[key] = serializeObject(serializableObject);
-		isDirty = true;
+	public void SetObject(string key, object serializableObject) {
+		SetBytes(key, serializeObject(serializableObject));
 	}
-	 * */
 	
 	// Utils
 
@@ -393,25 +388,26 @@ class PersistentData {
 	}
 	*/
 
-	/*
 	private byte[] serializeObject(object serializableObject) {
 		// Returns a serializable object as a byte array
-
-		BinaryFormatter formatter = new BinaryFormatter();
-		using(memoryStream) {
+		using (var memoryStream = new MemoryStream()) {
+			var formatter = new BinaryFormatter();
 			formatter.Serialize(memoryStream, serializableObject);
+			memoryStream.Flush();
+			memoryStream.Position = 0;
+			return memoryStream.ToArray();
 		}
-		//return Convert.ToBase64String(memoryStream.ToArray());
-		return memoryStream.ToArray();
 	}
 
-	private T deserializeObject<T>(byte[] source) {
-		// Creates a serializable object from a string
-		BinaryFormatter formatter = new BinaryFormatter();
-		return formatter.Deserialize(source);
+	private object deserializeObject(byte[] source) {
+		// Creates a serializable object from a byte array
+		using (var memoryStream = new MemoryStream(source)) {
+			var formatter = new BinaryFormatter();
+			memoryStream.Seek(0, SeekOrigin.Begin);
+			return formatter.Deserialize(memoryStream);
+		}
 	}
-	*/
-
+	
 	private string getKeyForName(string name) {
 		// Return a field name that is specific to this instance
 		return namePrefix + name.Replace(".", "_").Replace("/", "_").Replace("\\", "_");
