@@ -111,7 +111,7 @@ public class GameObjectAligner:MonoBehaviour {
 		}
 
 		// Set positions
-		gameObject.transform.position = new Vector3(newX, newY, gameObject.transform.position.z);
+		gameObject.transform.localPosition = new Vector3(newX, newY, gameObject.transform.position.z);
 
 	}
 
