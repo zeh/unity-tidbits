@@ -37,11 +37,11 @@ class ZTween {
 
 	// http://www.createjs.com/Docs/TweenJS/modules/TweenJS.html
 
-	ZTween.get(gameObject).scaleTo(new Vector3(2, 2, 2), 1.0f, Equations.quadOut).wait(1).call(Func).set("visible", false).play();
-	ZTween.get(gameObject).pause();
-	ZTween.get(gameObject).resume();
-	ZTween.get(gameObject).stop();
-	ZTween.get(gameObject, loop, useTicks);
+	ZTween.use(gameObject).scaleTo(new Vector3(2, 2, 2), 1.0f, Easing.quadOut).wait(1).call(Func).set("visible", false).play();
+	ZTween.use(gameObject).pause();
+	ZTween.use(gameObject).resume();
+	ZTween.use(gameObject).stop();
+	ZTween.use(gameObject, loop, useTicks);
 	*/
 
 	#region ZTween static interface
