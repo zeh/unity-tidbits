@@ -108,6 +108,31 @@ class ValueList {
 		setValueInternal(keyPath, new ValueItemString(value));
 	}
 
+	public void SetFromJSON(string jsonSource) {
+		// Parses a JSON file and sets the value data
+		// { "key" : "value", "group" : { "key": "value" }}
+
+		SetFromDictionary(JSON.parseAsDictionary(jsonSource, JSON.FLAG_REMOVE_COMMENTS));
+	}
+
+	public void SetFromDictionary(Dictionary<string, object> dictionary, string parentRoot = "") {
+		// Set values from a dictionary, using a parent root if any
+
+		string thisPath;
+		foreach (KeyValuePair<string, object> entry in dictionary) {
+			thisPath = (parentRoot.Length > 0 ? parentRoot + ID_HYERARCHY_SEPARATOR : "") + entry.Key;
+			if (entry.Value is string) {
+				// Normal string
+				SetString(thisPath, entry.Value as string);
+			} else if (entry.Value is Dictionary<string, object>) {
+				// Group
+				SetFromDictionary(entry.Value as Dictionary<string, object>, thisPath);
+			} else {
+				Debug.LogError("Error! Cannot add from dictionary with object " + entry.Value);
+			}
+		}
+	}
+
 	/*
 	public string getProcessedString(string text) {
 		return getProcessedStringInternal(text);
