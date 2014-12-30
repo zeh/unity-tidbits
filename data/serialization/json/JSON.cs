@@ -306,7 +306,7 @@ public class JSON {
 	}
 
 	private static T convertObject<T>(object obj, T item) {
-		// Converts an object (dictionary or string) to a target type, recursively
+		// Converts an object (dictionary, string or list) to a target type, recursively
 		/*
 		Debug.Log("===================> " + item + " has " + ((object)item).GetType().GetProperties().Length + " properties");
 		for (int i = 0; i < item.GetType().GetProperties().Length; i++) {
@@ -351,10 +351,11 @@ public class JSON {
 		} else {
 			// It's a reference type, so an instance need to be created or used
 			if (targetField != null) {
-				// An instance already exists, just fill it everything into it
+				// An instance already exists, just fill everything into it
 				return convertObject(value, targetField);
 			} else if (targetType.GetConstructor(Type.EmptyTypes) != null) {
 				// The type has default constructor, just create and use it
+				// TODO: special case for Vector2
 				return convertObject(value, Activator.CreateInstance(targetType));
 			} else {
 				// No default constructor, nothing can be done
