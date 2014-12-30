@@ -334,8 +334,17 @@ public class JSON {
 			}
 			return item;
 		} else if (obj is List<object>) {
-			Debug.LogError("Lists are not parsed yet!");
-			return default(T);
+			if (item is IList) {
+				// Destination is list, can set
+				PropertyInfo propertyInfo = item.GetType().GetProperty("Item");
+
+				IList itemAsList = item as IList;
+				itemAsList.Clear();
+				foreach (object entryValue in obj as List<object>) {
+					itemAsList.Add(getValueForField(null, entryValue, propertyInfo.PropertyType));
+				}
+			}
+			return item;
 		} else {
 			Debug.LogError("Type of object [" + obj + "] is unrecognized!");
 			return default(T);
