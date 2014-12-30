@@ -31,6 +31,9 @@ public class PersistentData {
 
  	pd.SetBytes("name", new byte[] {...});
 	byte[] bytes = pd.GetBytes("name");
+	
+	pd.SetObject("name", myObject); // myObject must be Serializable
+	SomeType myObject = pd.GetObject("name") as SomeType;
 
 	// Options:
 	pd.cacheValues = true;		// Save primitive values in memory for faster access (default true)
@@ -40,7 +43,7 @@ public class PersistentData {
 	// Good example of another solution (that tries to replace playerprefs): http://www.previewlabs.com/wp-content/uploads/2014/04/PlayerPrefs.cs
 	
 	TODO/test:
-	* Save/write serializable object
+	* Save/write serializable object (test)
 	* More secure/encrypted writing (use StringUtils.encodeRC4 ?)
 	* Save/load lists? test
 	* First read may be too slow. Test
