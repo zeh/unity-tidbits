@@ -26,6 +26,7 @@ class ZTween {
 	/**
 	 * Examples:
 	 * .call(() => logDone("over"))
+	 * .call(someFunction)
 	 * // Getter/setter, for function pairs
 	 * ZTween.use(getValue, setValue).valueTo(1.0f, 1, Easing.quadOut).call(() => logDone("value ok"));
 	 * // Lambdas, for getter-setter or member pairs
