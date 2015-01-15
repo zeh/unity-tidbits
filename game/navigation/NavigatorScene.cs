@@ -46,7 +46,7 @@ public class NavigatorScene:MonoBehaviour {
 
 		// Track page
 		//Debug.Log("Trying to track ::: [" + "navigation:screen:" + trackingId + "]");
-		GA.API.Design.NewEvent("navigation:screen:" + trackingId); 
+		TrackingManager.getInstance().trackScreen(trackingId);
 	}
 
 	public virtual void onFinishedShowing() {
