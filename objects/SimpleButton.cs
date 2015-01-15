@@ -54,6 +54,7 @@ public class SimpleButton:MonoBehaviour {
 		// Only called when the mouse is released over the same GUIElement or Collider as it was pressed. This is called BEFORE OnMouseUp
 		if (_isPressed) {
 			performAction();
+			animateRelease();
 		}
 	}
 
@@ -61,7 +62,6 @@ public class SimpleButton:MonoBehaviour {
 		// Called when the user has released the mouse button
 		if (_isPressed) {
 			_isPressed = false;
-			animateRelease();
 		}
 	}
 
