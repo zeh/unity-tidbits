@@ -209,13 +209,13 @@ public class RoundedCube:CustomMeshObject {
 		// Create the top or bottom planes
 
 		// TR
-		addCornerVerticesToArray(ref vertices, ref position, segments, radius, w * 0.5f - radius + offsetX, -h * 0.5f + radius + offsetY, z);
+		addCornerVerticesToArray(ref vertices, ref position, segments, radius, w * 0.5f - radius + offsetX, -h * 0.5f + radius + offsetY, z, false, true);
 		// BR
-		addCornerVerticesToArray(ref vertices, ref position, segments, radius, w * 0.5f - radius + offsetX, h * 0.5f - radius + offsetY, z);
+		addCornerVerticesToArray(ref vertices, ref position, segments, radius, w * 0.5f - radius + offsetX, h * 0.5f - radius + offsetY, z, false, false);
 		// BL
-		addCornerVerticesToArray(ref vertices, ref position, segments, radius, -w * 0.5f + radius + offsetX, h * 0.5f - radius + offsetY, z);
+		addCornerVerticesToArray(ref vertices, ref position, segments, radius, -w * 0.5f + radius + offsetX, h * 0.5f - radius + offsetY, z, true, false);
 		// TL
-		addCornerVerticesToArray(ref vertices, ref position, segments, radius, -w * 0.5f + radius + offsetX, -h * 0.5f + radius + offsetY, z);
+		addCornerVerticesToArray(ref vertices, ref position, segments, radius, -w * 0.5f + radius + offsetX, -h * 0.5f + radius + offsetY, z, true, true);
 	}
 
 	private void addCapTrianglesToArray(ref int[] triangles, ref int position, int verticesPosition, int verticesPerPlane, bool flip = false) {
@@ -268,23 +268,23 @@ public class RoundedCube:CustomMeshObject {
 		}
 	}
 
-	private void addCornerVerticesToArray(ref Vector3[] vertices, ref int position, int segments, float radius, float x, float y, float z) {
+	private void addCornerVerticesToArray(ref Vector3[] vertices, ref int position, int segments, float radius, float x, float y, float z, bool leftCorner, bool topCorner) {
 		// Create the corner vertices
 		if (segments == 0) {
 			// No rounded corner at all
-			vertices[position].x = x + (x > 0 ? radius : -radius);
-			vertices[position].y = y + (y > 0 ? radius : -radius);
+			vertices[position].x = x + (leftCorner ? -radius : radius);
+			vertices[position].y = y + (topCorner ? -radius : radius);
 			vertices[position].z = z;
 			position++;
 		} else {
 			const float HALF_PI = (float)(Math.PI * 0.5);
 
 			float startingAngle;
-			if (x > 0 && y > 0) {
+			if (!leftCorner && !topCorner) {
 				startingAngle = 0;
-			} else if (x < 0 && y > 0) {
+			} else if (leftCorner && !topCorner) {
 				startingAngle = HALF_PI;
-			} else if (x < 0 && y < 0) {
+			} else if (leftCorner && topCorner) {
 				startingAngle = HALF_PI * 2f;
 			} else {
 				startingAngle = HALF_PI * 3f;
