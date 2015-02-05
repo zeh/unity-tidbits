@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine.Cloud.Analytics;
 using System.Collections.Generic;
+using System;
 
 public class TrackingManager:MonoBehaviour {
 
@@ -13,7 +15,8 @@ public class TrackingManager:MonoBehaviour {
 	public GoogleAnalyticsV3 googleAnalyticsTracker;
 	public bool useGoogleAnalytics;
 
-	public bool useGameAnalytics;
+	public string unityAnalyticsAppId;
+	public bool useUnityAnalytics;
 
 	private static TrackingManager instance;
 
@@ -26,8 +29,50 @@ public class TrackingManager:MonoBehaviour {
 	}
 	
 	void Start() {
+		// Google Analytics
 		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
+			// Start session
 			googleAnalyticsTracker.StartSession();
+		}
+
+		// Unity Analytics
+		if (useUnityAnalytics) {
+			// Start session
+			UnityAnalytics.StartSDK(unityAnalyticsAppId);
+			
+			// Custom tracking: platform
+			#if UNITY_EDITOR
+			trackUACustomEventPlatform("editor");
+			#elif UNITY_IPHONE
+			trackUACustomEventPlatform("ios");
+			#elif UNITY_ANDROID
+			trackUACustomEventPlatform("android");
+			#elif UNITY_STANDALONE_OSX
+			trackUACustomEventPlatform("osx");
+			#elif UNITY_STANDALONE_WIN
+			trackUACustomEventPlatform("windows");
+			#elif UNITY_WEBPLAYER
+			trackUACustomEventPlatform("web");
+			#elif UNITY_WII
+			trackUACustomEventPlatform("wii");
+			#elif UNITY_PS3
+			trackUACustomEventPlatform("ps3");
+			#elif UNITY_XBOX360
+			trackUACustomEventPlatform("xbox360");
+			#elif UNITY_FLASH
+			trackUACustomEventPlatform("flash");
+			#elif UNITY_BLACKBERRY
+			trackUACustomEventPlatform("blackberry");
+			#elif UNITY_WP8
+			trackUACustomEventPlatform("windows-phone-8");
+			#elif UNITY_METRO
+			trackUACustomEventPlatform("windows-metro");
+			#else
+			trackUACustomEventPlatform("unknown-" + Application.platform);
+			#endif
+			
+			// Custom tracking: user
+			trackUACustomEvent("user", "os_language", Application.systemLanguage);
 		}
 	}
 
@@ -44,6 +89,36 @@ public class TrackingManager:MonoBehaviour {
 	public void DispatchHits();
 	 */
 
+	private void trackUACustomEventPlatform(string platformId) {
+		trackUACustomEvent("platform",
+			"id", platformId, 
+			"os", SystemInfo.operatingSystem,
+			"device_model", SystemInfo.deviceModel,
+			"device_name", SystemInfo.deviceName,
+			"device_type", SystemInfo.deviceType,
+			"memory", SystemInfo.systemMemorySize,
+			"unity_runtime_version", Application.unityVersion,
+			"is_mobile", Application.isMobilePlatform,
+			"is_console", Application.isConsolePlatform,
+			"internet", Application.internetReachability
+			// TODO: SystemInfo.processorType
+			// TODO: average fps, lowest fps
+		);
+	}
+
+	private void trackUACustomEvent(string eventType, params object[] paramValues) {
+		// Track a custom event using Unity Analytics
+		//https://analytics.cloud.unity3d.com/docs
+		// Max 10 params per custom event
+
+		var parametersDict = new Dictionary<string, object>();
+		for (var i = 0; i < paramValues.Length; i += 2) {
+			parametersDict.Add(paramValues[i] as string, paramValues[i+1]);
+		}
+		
+		UnityAnalytics.CustomEvent(eventType, parametersDict);
+	}
+
 	// ================================================================================================================
 	// PUBLIC INTERFACE -----------------------------------------------------------------------------------------------
 
@@ -52,14 +127,19 @@ public class TrackingManager:MonoBehaviour {
 	}
 
 	public void trackScreen(string screenId) {
+		/*
 		if (useGameAnalytics) {
 			GA.API.Design.NewEvent("navigation:screen:" + screenId);
 		}
+		*/
 		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
 			googleAnalyticsTracker.LogScreen(screenId);
 
 			// //Builder Hit with all App View parameters (all parameters required):
 			//googleAnalytics.LogScreen(new AppViewHitBuilder() .SetScreenName("Main Menu"));
+		}
+		if (useUnityAnalytics) {
+			trackUACustomEvent("navigation_screen", "id", screenId);
 		}
 	}
 
@@ -121,6 +201,15 @@ public class TrackingManager:MonoBehaviour {
         .SetSocialAction("Retweet")
         .SetSocialTarget("twitter.com/googleanalytics/status/482210840234295296"));
 	 * */
+	 
+	public void trackTransaction(string productId, string purchaseMethod, float price, string currency) {
+		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
+			googleAnalyticsTracker.LogTransaction(productId, purchaseMethod, price, 0.0, 0.0, currency);
+		}
+		if (useUnityAnalytics) {
+			UnityAnalytics.Transaction(purchaseMethod + "-" + productId, Convert.ToDecimal(price), currency);
+		}
+	}
 
 	/* Ecommerce - transaction
 	 * 
