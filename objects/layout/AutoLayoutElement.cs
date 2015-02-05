@@ -55,7 +55,6 @@ public class AutoLayoutElement:MonoBehaviour {
 				applyLayoutRules();
 				needsAdditionalUpdate = true;
 			}
-			applyLayoutRules();
 		}
 	}
 
