@@ -69,6 +69,8 @@ public class AutoResizer:AutoLayoutElement {
 	public FitTypes fitType;
 	public float fitAspectRatio = 1;
 
+	public float multiplyScale = 1;
+
 	public bool updateAutomatically;
 
 
@@ -113,12 +115,31 @@ public class AutoResizer:AutoLayoutElement {
 		var scaleY = (top - bottom) / (bounds.max.y - bounds.min.y);
 		var scaleZ = gameObject.transform.localScale.z;
 
+		var scaleAspectRatio = scaleX / scaleY;
+		var objectIsWider = scaleAspectRatio < fitAspectRatio;
+
+		var oldScaleX = scaleX;
+		var oldScaleY = scaleY;
+
+		if (fitType == FitTypes.FIT_X || (fitType == FitTypes.FIT_INSIDE && objectIsWider) || (fitType == FitTypes.FIT_OUTSIDE && !objectIsWider)) {
+			// Keep ratio and use X as base
+			scaleY = scaleX / fitAspectRatio;
+		} else if (fitType == FitTypes.FIT_Y || (fitType == FitTypes.FIT_INSIDE && !objectIsWider) || (fitType == FitTypes.FIT_OUTSIDE && objectIsWider)) {
+			// Keep ratio and use Y as base
+			scaleX = scaleY * fitAspectRatio;
+		} else {
+			// Free distort, do nothing
+		}
+
+		scaleX *= multiplyScale;
+		scaleY *= multiplyScale;
+
 		var newX = gameObject.transform.position.x;
 		var newY = gameObject.transform.position.y;
 		var newZ = gameObject.transform.position.z;
 
-		if (autoMoveX) newX = left + (gameObject.transform.position.x - bounds.min.x) * scaleX;
-		if (autoMoveY) newY = bottom + (gameObject.transform.position.y - bounds.min.y) * scaleY;
+		if (autoMoveX) newX = left + (gameObject.transform.position.x - bounds.min.x) * oldScaleX;
+		if (autoMoveY) newY = bottom + (gameObject.transform.position.y - bounds.min.y) * oldScaleY;
 
 		gameObject.transform.position = new Vector3(newX, newY, newZ);
 		gameObject.transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
