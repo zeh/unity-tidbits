@@ -1,15 +1,29 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class NavigatorScene:MonoBehaviour {
 
-	// Properties
+	// Parameters
 	public GameObject cameraTarget;
 	public bool preferFullscreen;
 	public string trackingId;
 
+	// For tracking
+	public delegate void NavigatorSceneEvent();
+
+	public event NavigatorSceneEvent OnStartedShowing;
+	public event NavigatorSceneEvent OnFinishedShowing;
+	public event NavigatorSceneEvent OnPause;
+	public event NavigatorSceneEvent OnResume;
+	public event NavigatorSceneEvent OnStartedHiding;
+	public event NavigatorSceneEvent OnFinishedHiding;
+
+	// Properties
 	private bool isActivated = true;
 	private bool disableRendering = false;
+
+	private Dictionary<string, object> bundle;
+
 
 	// ================================================================================================================
 	// EXTENDED INTERFACE ---------------------------------------------------------------------------------------------
@@ -37,6 +51,23 @@ public class NavigatorScene:MonoBehaviour {
 		}
 	}
 
+
+	// ================================================================================================================
+	// PUBLIC INTERFACE ------------------------------------------------------------------------------------------------
+	
+	public string getBundleParameterAsString(string key, string defaultValue = "") {
+		object value;
+		return bundle != null && bundle.TryGetValue(key, out value) ? (string)value : defaultValue;
+	}
+
+
+	// ================================================================================================================
+	// EVENT INTERFACE ------------------------------------------------------------------------------------------------
+
+	public virtual void initialize(Dictionary<string, object> newBundle) {
+		bundle = newBundle;
+	}
+	
 	public virtual void onStartedShowing() {
 		// Changes screen
 		ApplicationChrome.statusBarState = ApplicationChrome.navigationBarState = ApplicationChrome.States.Visible;
@@ -47,17 +78,34 @@ public class NavigatorScene:MonoBehaviour {
 		// Track page
 		//Debug.Log("Trying to track ::: [" + "navigation:screen:" + trackingId + "]");
 		TrackingManager.getInstance().trackScreen(trackingId);
+
+		if (OnStartedShowing != null) OnStartedShowing();
 	}
 
 	public virtual void onFinishedShowing() {
+		if (OnFinishedShowing != null) OnFinishedShowing();
+	}
+
+	public virtual void onPause() {
+		if (OnPause != null) OnPause();
+	}
+
+	public virtual void onResume() {
+		if (OnResume != null) OnResume();
 	}
 
 	public virtual void onStartedHiding() {
+		if (OnStartedHiding != null) OnStartedHiding();
 	}
 
 	public virtual void onFinishedHiding() {
 		deActivate();
+		if (OnFinishedHiding != null) OnFinishedHiding();
 	}
+
+
+	// ================================================================================================================
+	// INTERNAL INTERFACE ---------------------------------------------------------------------------------------------
 
 	private void deActivate() {
 		//gameObject.SetActive(false);

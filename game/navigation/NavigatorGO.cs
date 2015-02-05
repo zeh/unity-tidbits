@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class NavigatorGO:MonoBehaviour {
 
@@ -18,7 +19,7 @@ public class NavigatorGO:MonoBehaviour {
 	void Start() {
 		instance = this;
 		isNavigating = false;
-		if (startingScene != null) navigateTo(startingScene, true);
+		if (startingScene != null) navigateTo(startingScene, null, true);
 	}
 
 	void Update() {
@@ -41,12 +42,15 @@ public class NavigatorGO:MonoBehaviour {
 		}
 	}
 
-	public void navigateTo(NavigatorScene newScene, bool immediate = false) {
+	public void navigateTo(NavigatorScene newScene, Dictionary<string, object> newBundle = null, bool immediate = false) {
 		// Navigates to a gameobject with the camera
 		//Debug.Log("navigating to " + gameObject + " @ " + gameObject.transform.position);
 
 		if (!isNavigating && newScene != null && newScene.cameraTarget != null && newScene != currentScene) {
 			//* .call(() => logDone("over"))
+
+			// Initializations
+			newScene.initialize(newBundle);
 
 			if (immediate) {
 				// Immediately show it
