@@ -36,7 +36,7 @@ public class StringUtils {
 		return hashString.PadLeft(32, '0');
 	}
 
-	// Encrypts  a string using a key and the RC4 algorithm
+	// Encrypts a string using a key and the RC4 algorithm
 	// http://entitycrisis.blogspot.com/2011/04/encryption-between-python-and-c.html
 	// Test: http://rc4.online-domain-tools.com/
 	public static byte[] encodeRC4(string __data, string __skey) {
@@ -105,6 +105,3 @@ public class StringUtils {
 		return result;
 	}
 }
-
-
-
