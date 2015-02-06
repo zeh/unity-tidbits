@@ -11,9 +11,14 @@ using UnityEngine;
  */
 class ApplicationChrome {
 
- 	// http://forum.unity3d.com/threads/released-immersive-mode-for-android.244659/
-	// http://developer.android.com/reference/android/view/View.html#setSystemUiVisibility(int)
-	// http://forum.unity3d.com/threads/calling-setsystemuivisibility.139445/#post-952946
+	/**
+	 * Manipulates the system application Chrome to change the way the status bar and navigation bar work
+	 *
+	 * References:
+	 * . http://developer.android.com/reference/android/view/View.html#setSystemUiVisibility(int)
+	 * . http://forum.unity3d.com/threads/calling-setsystemuivisibility.139445/#post-952946
+	 * . http://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_LAYOUT_IN_SCREEN
+	 **/
 
 	// Enums
 	public enum States {
@@ -24,19 +29,11 @@ class ApplicationChrome {
 		Hidden
 	}
 
+	// Constants
 	private const uint DEFAULT_BACKGROUND_COLOR = 0xff000000;
 
-		/*
-// http://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_LAYOUT_IN_SCREEN
-public static final int FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
-
-Added in API level 21
-Flag indicating that this Window is responsible for drawing the background for the system bars. If set, the system bars are drawn with a transparent background and the corresponding areas in this window are filled with the colors specified in getStatusBarColor() and getNavigationBarColor().
-
-Constant Value: -2147483648 (0x80000000)
-*/
-	// Instances
 	#if USE_ANDROID
+		// Original Android flags
 		private const int VIEW_SYSTEM_UI_FLAG_VISIBLE = 0;					// Added in API 14 (Android 4.0.x): Status bar visible (the default)
 		private const int VIEW_SYSTEM_UI_FLAG_LOW_PROFILE = 1;				// Added in API 14 (Android 4.0.x): Low profile for games, book readers, and video players; the status bar and/or navigation icons are dimmed out (if visible)
 		private const int VIEW_SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2;			// Added in API 14 (Android 4.0.x): Hides all navigation. Cleared when theres any user interaction.
@@ -47,15 +44,15 @@ Constant Value: -2147483648 (0x80000000)
 		private const int VIEW_SYSTEM_UI_FLAG_IMMERSIVE = 2048;				// Added in API 19 (Android 4.4): like HIDE_NAVIGATION, but interactive (it's a modifier for HIDE_NAVIGATION, needs to be used with it)
 		private const int VIEW_SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096;		// Added in API 19 (Android 4.4): tells that HIDE_NAVIGATION and FULSCREEN are interactive (also just a modifier)
 
-		private static int systemUiVisibilityValue;
-
 		private static int WINDOW_FLAG_FULLSCREEN = 0x00000400;
 		private static int WINDOW_FLAG_FORCE_NOT_FULLSCREEN = 0x00000800;
 		private static int WINDOW_FLAG_LAYOUT_IN_SCREEN = 0x00000100;
 		private static int WINDOW_FLAG_TRANSLUCENT_STATUS = 0x04000000;
 		private static int WINDOW_FLAG_TRANSLUCENT_NAVIGATION = 0x08000000;
-		private static int WINDOW_FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS = -2147483648; // 0x80000000;
+		private static int WINDOW_FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS = -2147483648; // 0x80000000; // Added in API 21 (Android 5.0): tells the Window is responsible for drawing the background for the system bars. If set, the system bars are drawn with a transparent background and the corresponding areas in this window are filled with the colors specified in getStatusBarColor() and getNavigationBarColor()
 
+		// Current values
+		private static int systemUiVisibilityValue;
 		private static int flagsValue;
 	#endif
 
@@ -76,7 +73,6 @@ Constant Value: -2147483648 (0x80000000)
 	// INTERNAL INTERFACE ---------------------------------------------------------------------------------------------
 
 	static ApplicationChrome() {
-		Debug.Log("Applying default application chrome UI settings");
 		applyUIStates();
 		applyUIColors();
 	}
@@ -168,10 +164,6 @@ Constant Value: -2147483648 (0x80000000)
 		private static void setSystemUiVisibility(int value) {
 			if (systemUiVisibilityValue != value) {
 				systemUiVisibilityValue = value;
-
-				//var buildVersion = new AndroidJavaClass("android.os.Build.VERSION");
-				//if (buildVersion.GetStatic<int>("SDK_INT") >= 11)
-
 				runOnAndroidUiThread(setSystemUiVisibilityInThread);
 			}
 		}
@@ -229,9 +221,7 @@ Constant Value: -2147483648 (0x80000000)
 	// ACCESSOR INTERFACE ---------------------------------------------------------------------------------------------
 
 	public static States navigationBarState {
-		get {
-			return _navigationBarState;
-		}
+		get { return _navigationBarState; }
 		set {
 			if (_navigationBarState != value) {
 				_navigationBarState = value;
@@ -241,9 +231,7 @@ Constant Value: -2147483648 (0x80000000)
 	}
 
 	public static States statusBarState {
-		get {
-			return _statusBarState;
-		}
+		get { return _statusBarState; }
 		set {
 			if (_statusBarState != value) {
 				_statusBarState = value;
@@ -253,9 +241,7 @@ Constant Value: -2147483648 (0x80000000)
 	}
 
 	public static bool dimmed {
-		get {
-			return _dimmed;
-		}
+		get { return _dimmed; }
 		set {
 			if (_dimmed != value) {
 				_dimmed = value;
@@ -265,9 +251,7 @@ Constant Value: -2147483648 (0x80000000)
 	}
 
 	public static uint statusBarColor {
-		get {
-			return _statusBarColor;
-		}
+		get { return _statusBarColor; }
 		set {
 			if (_statusBarColor != value) {
 				_statusBarColor = value;
@@ -278,9 +262,7 @@ Constant Value: -2147483648 (0x80000000)
 	}
 
 	public static uint navigationBarColor {
-		get {
-			return _navigationBarColor;
-		}
+		get { return _navigationBarColor; }
 		set {
 			if (_navigationBarColor != value) {
 				_navigationBarColor = value;
