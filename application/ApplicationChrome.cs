@@ -12,7 +12,7 @@ using UnityEngine;
 class ApplicationChrome {
 
 	/**
-	 * Manipulates the system application Chrome to change the way the status bar and navigation bar work
+	 * Manipulates the system application chrome to change the way the status bar and navigation bar work
 	 *
 	 * References:
 	 * . http://developer.android.com/reference/android/view/View.html#setSystemUiVisibility(int)
