@@ -15,12 +15,13 @@ public class PersistentData {
 	Saves and loads persistent user data in a simple but safer fashion, with more features.
 
 	* Uses system file I/O when possible, or PlayerPrefs when running web version
-	* Uses singleton-ish access (based on itds), no instantiation or references necessary
+	* Uses singleton-ish access (based on ids), no instantiation or references necessary
 
 	Advantages over PlayerPrefs:
 	* Allow defaults when reading
 	* Also save/load bools, double, long
-	* Allow byte arrays (as base64 encoded data in UserPrefs, normal byte array when using file I/O)
+	* Allow byte arrays (as base64 encoded data in PlayerPrefs, normal byte array when using file I/O)
+	* Allow serializable objects
 	* No collision of data when using across different objects (using own persistentdata instances)
 	* faster?
 
@@ -43,11 +44,9 @@ public class PersistentData {
 	pd.cacheValues = true;		// Save primitive values in memory for faster access (default true)
 	pd.cacheByteArrays = true;	// Save byte array values in memory for faster access (default false) (untested)
 
-	
 	// Good example of another solution (that tries to replace playerprefs): http://www.previewlabs.com/wp-content/uploads/2014/04/PlayerPrefs.cs
 	
 	TODO/test:
-	* Save/write serializable object (test)
 	* More secure/encrypted writing (use StringUtils.encodeRC4 ?)
 	* Save/load lists? test
 	* First read may be too slow. Test
@@ -55,6 +54,7 @@ public class PersistentData {
 	* Use SystemInfo.deviceUniqueIdentifier.Substring for key? would not allow carrying data over devices though
 	* Make sure files are deleted on key removal/clear
 	* Use compression? System.IO.Compression.GZipStream
+	* Test WebGL, see if it works
 	*/
 
 	// Constant properties
