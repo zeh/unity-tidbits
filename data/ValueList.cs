@@ -51,7 +51,7 @@ class ValueList {
 	private static Dictionary<string, ValueList> instances;
 
 	// Properties
-	private string _name;									// Instance name
+	private string _key;									// Instance name
 	private ValueGroup root;
 
 
@@ -66,8 +66,8 @@ class ValueList {
 	// ================================================================================================================
 	// CONSTRUCTOR ----------------------------------------------------------------------------------------------------
 
-	public ValueList(string name = "") {
-		_name = name;
+	public ValueList(string key = "") {
+		_key = key;
 
 		ValueList.addInstance(this);
 		root = new ValueGroup();
@@ -78,14 +78,15 @@ class ValueList {
 	// STATIC INTERFACE -----------------------------------------------------------------------------------------------
 
 	private static void addInstance(ValueList instance) {
-		instances.Add(instance.name, instance);
+		if (instances.ContainsKey(instance.key)) instances.Remove(instance.key);
+		instances.Add(instance.key, instance);
 	}
 
-	public static ValueList getInstance(string name = "") {
-		if (instances.ContainsKey(name)) return instances[name];
+	public static ValueList getInstance(string key = "") {
+		if (instances.ContainsKey(key)) return instances[key];
 
 		// Doesn't exist, create a new one and return it
-		return new ValueList(name);
+		return new ValueList(key);
 	}
 
 
@@ -104,31 +105,37 @@ class ValueList {
 		return getValueInternal<string>(keyPath);
 	}
 
+	public T GetValue<T>(string keyPath) {
+		return getValueInternal<T>(keyPath);
+	}
+
 	public void SetString(string keyPath, string value) {
 		setValueInternal(keyPath, new ValueItemString(value));
+	}
+
+	public bool HasKey(string keyPath) {
+		return getValueInternal<object>(keyPath) != null;
 	}
 
 	public void SetFromJSON(string jsonSource) {
 		// Parses a JSON file and sets the value data
 		// { "key" : "value", "group" : { "key": "value" }}
-
 		SetFromDictionary(JSON.parseAsDictionary(jsonSource, JSON.FLAG_REMOVE_COMMENTS));
 	}
 
-	public void SetFromDictionary(Dictionary<string, object> dictionary, string parentRoot = "") {
+	public void SetFromDictionary(IDictionary dictionary, string parentRoot = "") {
 		// Set values from a dictionary, using a parent root if any
-
 		string thisPath;
-		foreach (KeyValuePair<string, object> entry in dictionary) {
+		foreach (DictionaryEntry entry in dictionary) {
 			thisPath = (parentRoot.Length > 0 ? parentRoot + ID_HYERARCHY_SEPARATOR : "") + entry.Key;
 			if (entry.Value is string) {
 				// Normal string
 				SetString(thisPath, entry.Value as string);
-			} else if (entry.Value is Dictionary<string, object>) {
+			} else if (entry.Value is IDictionary) {
 				// Group
 				SetFromDictionary(entry.Value as Dictionary<string, object>, thisPath);
 			} else {
-				Debug.LogError("Error! Cannot add from dictionary with object " + entry.Value);
+				Debug.LogError("Error! Cannot add from dictionary with object [" + entry.Value + "]");
 			}
 		}
 	}
@@ -143,8 +150,8 @@ class ValueList {
 	// ================================================================================================================
 	// ACCESSOR INTERFACE ---------------------------------------------------------------------------------------------
 
-	public string name {
-		get { return _name; }
+	public string key {
+		get { return _key; }
 	}
 
 
@@ -186,7 +193,6 @@ class ValueList {
 	 * */
 
 	private T getValueInternal<T>(string keyPath) {
-
 		// Get the full path to the value name
 		var ids = new List<string>(keyPath.Split(ID_HYERARCHY_SEPARATOR.ToCharArray()));
 		ValueGroup group;
@@ -204,7 +210,7 @@ class ValueList {
 		if (group == null) {
 			return default(T);
 		} else if (group.hasItem(itemKey)) {
-			return (T)group.getItem(itemKey).getValue();
+			return (T)(group.getItem(itemKey).getValue());
 		} else {
 			Debug.LogWarning("ValueList :: Value path key [" + keyPath + "] doesn't exist!");
 			return default(T);
