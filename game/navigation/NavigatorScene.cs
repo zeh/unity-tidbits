@@ -60,6 +60,16 @@ public class NavigatorScene:MonoBehaviour {
 		return bundle != null && bundle.TryGetValue(key, out value) ? (string)value : defaultValue;
 	}
 
+	public int getBundleParameterAsInt(string key, int defaultValue = 0) {
+		object value;
+		return bundle != null && bundle.TryGetValue(key, out value) ? (int)value : defaultValue;
+	}
+
+	public T getBundleParameterAs<T>(string key, T defaultValue = default(T)) {
+		object value;
+		return bundle != null && bundle.TryGetValue(key, out value) ? (T)value : defaultValue;
+	}
+
 
 	// ================================================================================================================
 	// EVENT INTERFACE ------------------------------------------------------------------------------------------------
