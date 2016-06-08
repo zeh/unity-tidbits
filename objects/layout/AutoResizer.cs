@@ -89,6 +89,12 @@ public class AutoResizer:AutoLayoutElement {
 	// ================================================================================================================
 	// INTERNAL INTERFACE ---------------------------------------------------------------------------------------------
 
+	#if UNITY_EDITOR
+	private void onUpdate() {
+		applyLayout();
+	}
+	#endif
+
 	private void checkAllParents() {
 		// Check if the parents were changed
 		checkParents(parentLeft, parentRight, parentTop, parentBottom);
