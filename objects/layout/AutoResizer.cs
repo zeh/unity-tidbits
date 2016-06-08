@@ -72,6 +72,8 @@ public class AutoResizer:AutoLayoutElement {
 	public float multiplyScale = 1;
 
 	public bool updateAutomatically;
+	public bool flipX;
+	public bool flipY;
 
 
 	// ================================================================================================================
@@ -131,8 +133,8 @@ public class AutoResizer:AutoLayoutElement {
 			// Free distort, do nothing
 		}
 
-		scaleX *= multiplyScale;
-		scaleY *= multiplyScale;
+		scaleX *= multiplyScale * (flipX ? -1 : 1);
+		scaleY *= multiplyScale * (flipY ? -1 : 1);
 
 		var newX = gameObject.transform.position.x;
 		var newY = gameObject.transform.position.y;
