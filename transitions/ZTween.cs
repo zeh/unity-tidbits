@@ -394,7 +394,7 @@ class ZTween {
 		}
 
 		public void update(float t) {
-			targetSet(MathUtils.lerp(startValue, targetValue, transition(t)));
+			targetSet(Mathf.LerpUnclamped(startValue, targetValue, transition(t)));
 		}
 
 		public void end() {
@@ -440,7 +440,6 @@ class ZTween {
 		private float duration;
 		private Vector3 startValue;
 		private Vector3 targetValue;
-		private Vector3 tempValue;
 		private Func<float, float> transition;
 
 		// Extension functions
@@ -453,12 +452,10 @@ class ZTween {
 
 		public void start() {
 			this.startValue = target.transform.localScale;
-			this.tempValue = new Vector3();
 		}
 
 		public void update(float t) {
-			MathUtils.applyLerp(startValue, targetValue, transition(t), ref tempValue);
-			target.transform.localScale = tempValue;
+			target.transform.localScale = Vector3.LerpUnclamped(startValue, targetValue, transition(t));
 		}
 
 		public void end() {
@@ -502,7 +499,6 @@ class ZTween {
 		private float duration;
 		private Vector3 startValue;
 		private Vector3 targetValue;
-		private Vector3 tempValue;
 		private Func<float, float> transition;
 
 		// Extension functions
@@ -515,12 +511,10 @@ class ZTween {
 
 		public void start() {
 			this.startValue = target.transform.localPosition;
-			this.tempValue = new Vector3();
 		}
 
 		public void update(float t) {
-			MathUtils.applyLerp(startValue, targetValue, transition(t), ref tempValue);
-			target.transform.localPosition = tempValue;
+			target.transform.localPosition = Vector3.LerpUnclamped(startValue, targetValue, transition(t));
 		}
 
 		public void end() {
