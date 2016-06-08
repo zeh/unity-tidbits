@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Cloud.Analytics;
+using UnityEngine.Analytics;
 using System.Collections.Generic;
 using System;
 
@@ -9,14 +9,15 @@ public class TrackingManager:MonoBehaviour {
 	 * A MonoBehavior to track using different systems.
 	 */
 
-
 	// https://github.com/googleanalytics/google-analytics-plugin-for-unity
 
 	public GoogleAnalyticsV3 googleAnalyticsTracker;
 	public bool useGoogleAnalytics;
 
-	public string unityAnalyticsAppId;
 	public bool useUnityAnalytics;
+
+	public bool loggingEnabled;
+	public bool trackingEnabled;
 
 	private static TrackingManager instance;
 
@@ -29,57 +30,38 @@ public class TrackingManager:MonoBehaviour {
 	}
 	
 	void Start() {
+		if (!trackingEnabled) return;
+
 		// Google Analytics
 		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
 			// Start session
 			googleAnalyticsTracker.StartSession();
 		}
 
-		// Unity Analytics
-		if (useUnityAnalytics) {
-			// Start session
-			UnityAnalytics.StartSDK(unityAnalyticsAppId);
+		// Start session
+		// The id is set in "Edit > Project Settings > Player" (as the cloud id)
 			
-			// Custom tracking: platform
-			#if UNITY_EDITOR
-			trackUACustomEventPlatform("editor");
-			#elif UNITY_IPHONE
-			trackUACustomEventPlatform("ios");
-			#elif UNITY_ANDROID
-			trackUACustomEventPlatform("android");
-			#elif UNITY_STANDALONE_OSX
-			trackUACustomEventPlatform("osx");
-			#elif UNITY_STANDALONE_WIN
-			trackUACustomEventPlatform("windows");
-			#elif UNITY_WEBPLAYER
-			trackUACustomEventPlatform("web");
-			#elif UNITY_WII
-			trackUACustomEventPlatform("wii");
-			#elif UNITY_PS3
-			trackUACustomEventPlatform("ps3");
-			#elif UNITY_XBOX360
-			trackUACustomEventPlatform("xbox360");
-			#elif UNITY_FLASH
-			trackUACustomEventPlatform("flash");
-			#elif UNITY_BLACKBERRY
-			trackUACustomEventPlatform("blackberry");
-			#elif UNITY_WP8
-			trackUACustomEventPlatform("windows-phone-8");
-			#elif UNITY_METRO
-			trackUACustomEventPlatform("windows-metro");
-			#else
-			trackUACustomEventPlatform("unknown-" + Application.platform);
-			#endif
+		// Custom tracking: platform
+		trackCustomEventPlatform();
 			
-			// Custom tracking: user
-			trackUACustomEvent("user", "os_language", Application.systemLanguage);
-		}
+		// Custom tracking: application
+		trackCustomEventApplication();
+
+		// Custom tracking: device
+		trackCustomEventDevice();
+			
+		// Custom tracking: user
+		trackCustomEventUser();
+
+		// TODO: performance (average fps, lowest fps)
 	}
 
 	void Update() {
 	}
 
 	void OnDestroy() {
+		if (!trackingEnabled) return;
+
 		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
 			googleAnalyticsTracker.StopSession();
 		}
@@ -89,35 +71,98 @@ public class TrackingManager:MonoBehaviour {
 	public void DispatchHits();
 	 */
 
-	private void trackUACustomEventPlatform(string platformId) {
-		trackUACustomEvent("platform",
-			"id", platformId, 
-			"os", SystemInfo.operatingSystem,
-			"device_model", SystemInfo.deviceModel,
-			"device_name", SystemInfo.deviceName,
-			"device_type", SystemInfo.deviceType,
-			"memory", SystemInfo.systemMemorySize,
-			"unity_runtime_version", Application.unityVersion,
-			"is_mobile", Application.isMobilePlatform,
-			"is_console", Application.isConsolePlatform,
-			"internet", Application.internetReachability
-			// TODO: SystemInfo.processorType
-			// TODO: average fps, lowest fps
+	private void trackCustomEventApplication() {
+		trackCustomEvent("info.application",
+			"version", "~" + Application.version.ToString(),				// Float
+			"uri", Application.absoluteURL,									// "" on editor and while testing on Android
+			"bundle", Application.bundleIdentifier,							// "com.zehfernando.KanaGenius"
+			"install_mode", Application.installMode							// "Editor" (testing on editor), "DeveloperBuild" (testing on Android)
 		);
 	}
 
-	private void trackUACustomEvent(string eventType, params object[] paramValues) {
+	private void trackCustomEventPlatform() {
+		#if UNITY_EDITOR
+		string platformId = "editor-" + Application.platform;
+		#elif UNITY_IPHONE
+		string platformId = "ios";
+		#elif UNITY_ANDROID
+		string platformId = "android";
+		#elif UNITY_STANDALONE_OSX
+		string platformId = "osx";
+		#elif UNITY_STANDALONE_WIN
+		string platformId = "windows";
+		#elif UNITY_WEBPLAYER
+		string platformId = "web";
+		#elif UNITY_WII
+		string platformId = "wii";
+		#elif UNITY_PS3
+		string platformId = "ps3";
+		#elif UNITY_XBOX360
+		string platformId = "xbox360";
+		#elif UNITY_FLASH
+		string platformId = "flash";
+		#elif UNITY_BLACKBERRY
+		string platformId = "blackberry";
+		#elif UNITY_WP8
+		string platformId = "windows-phone-8";
+		#elif UNITY_METRO
+		string platformId = "windows-metro";
+		#else
+		string platformId = "unknown-" + Application.platform;
+		#endif
+
+		trackCustomEvent("info.platform",
+			"id", platformId,												// "editor-WindowsEditor", "android"
+			"os", SystemInfo.operatingSystem,								// "Windows 7 Service Pack 1 (6.1.7601) 64bit", "Android OS 5.1 / API-22 (LMY47D/1743759)"
+			"unity_runtime_version", Application.unityVersion,				// "5.0.1f1"
+			"internet", Application.internetReachability					// "ReachableViaLocalAreaNetwork"
+		);
+	}
+
+	private void trackCustomEventDevice() {
+		trackCustomEvent("info.device",
+			"device_model", SystemInfo.deviceModel,							// "AMD Phenom(tm) II X4 955 Processor (8191 MB)", "LGE Nexus 5"
+			// "device_name", SystemInfo.deviceName,						// "ZEH-PC7"
+			"device_type", SystemInfo.deviceType,							// "Desktop", "Handheld"
+			"system_memory", "~" + SystemInfo.systemMemorySize.ToString() + "MB",		// 8191 as number
+			"graphics_memory", "~" + SystemInfo.graphicsMemorySize.ToString(),
+			"is_mobile", Application.isMobilePlatform,
+			"is_console", Application.isConsolePlatform,
+			// TODO: SystemInfo.processorType, processorCount
+			"dpi", "~" + Screen.dpi.ToString(),
+			"screen_width", "~" + Screen.width.ToString(),
+			"screen_height", "~" + Screen.height.ToString(),
+			"screen_size", "~" + (Math.Round(Mathf.Sqrt(Screen.width*Screen.width+Screen.height*Screen.height)/Screen.dpi*10f)/10f).ToString() + "in"
+		);
+	}
+
+	private void trackCustomEventUser() {
+		trackCustomEvent("info.user",
+			"os_language", Application.systemLanguage						// "English"
+		);
+	}
+
+	private void trackUACustomEvent(string eventType, Dictionary<string, object> parameters) {
 		// Track a custom event using Unity Analytics
 		//https://analytics.cloud.unity3d.com/docs
 		// Max 10 params per custom event
-
-		var parametersDict = new Dictionary<string, object>();
-		for (var i = 0; i < paramValues.Length; i += 2) {
-			parametersDict.Add(paramValues[i] as string, paramValues[i+1]);
-		}
 		
-		UnityAnalytics.CustomEvent(eventType, parametersDict);
+		var result = Analytics.CustomEvent(eventType, parameters);
+		if (result != AnalyticsResult.Ok) {
+			Debug.LogWarning("TRACKING :: Error: tracking custom event [" + eventType + "] didn't work, returned [" + result + "]");
+		}
 	}
+
+	private void trackGACustomEvent(string eventType, Dictionary<string, object> parameters) {
+		foreach (var entry in parameters) {
+			googleAnalyticsTracker.LogEvent(new EventHitBuilder()
+				.SetEventCategory(eventType)
+				.SetEventAction(entry.Key)
+				.SetEventLabel(Convert.ToString(entry.Value)));
+				//.SetEventValue(5));
+		}
+	}
+
 
 	// ================================================================================================================
 	// PUBLIC INTERFACE -----------------------------------------------------------------------------------------------
@@ -132,6 +177,12 @@ public class TrackingManager:MonoBehaviour {
 			GA.API.Design.NewEvent("navigation:screen:" + screenId);
 		}
 		*/
+
+		if (!trackingEnabled) return;
+
+		if (loggingEnabled) {
+			Debug.Log("TRACKING :: Screen : Screen id [" + screenId + "]");
+		}
 		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
 			googleAnalyticsTracker.LogScreen(screenId);
 
@@ -139,26 +190,36 @@ public class TrackingManager:MonoBehaviour {
 			//googleAnalytics.LogScreen(new AppViewHitBuilder() .SetScreenName("Main Menu"));
 		}
 		if (useUnityAnalytics) {
-			trackUACustomEvent("navigation_screen", "id", screenId);
+			trackUACustomEvent("event.navigation.screen", new Dictionary<string, object>{{"id", screenId}});
 		}
 	}
 
-	// Events
-	/*
-    googleAnalytics.LogEvent("Achievement", "Unlocked", "Slay 10 dragons", 5);
+	private void trackCustomEvent(string eventType, params object[] paramValues) {
+		if (!trackingEnabled) return;
 
-    //Builder Hit with all Event parameters
-    googleAnalytics.LogEvent(new EventHitBuilder()
-        .SetEventCategory("Achievement")
-        .SetEventAction("Unlocked")
-        .SetEventLabel("Slay 10 dragons")
-        .SetEventValue(5));
+		var parametersDict = new Dictionary<string, object>();
+		for (var i = 0; i < paramValues.Length; i += 2) {
+			parametersDict.Add(paramValues[i] as string, Convert.ToString(paramValues[i+1]));
+		}
 
-    //Builder Hit with minimum required Event parameters
-    googleAnalytics.LogEvent(new EventHitBuilder()
-        .SetEventCategory("Achievement")
-        .SetEventAction("Unlocked"));
-	 **/
+		if (loggingEnabled) {
+			string paramList = "";
+			for (var i = 0; i < paramValues.Length; i += 2) {
+				if (i > 0) paramList += ",";
+				paramList += (paramValues[i] as string) + ":" + paramValues[i + 1];
+			}
+
+			Debug.Log("TRACKING :: Custom Event :: Event [" + eventType + "], parameters [" + paramList + "]");
+		}
+
+		if (useGoogleAnalytics && googleAnalyticsTracker) {
+			trackGACustomEvent(eventType, parametersDict);
+		}
+
+		if (useUnityAnalytics) {
+			trackUACustomEvent(eventType, parametersDict);
+		}
+	}
 
 	/* Exceptions
 	 * public void LogException(string exceptionDescription, bool isFatal);
@@ -203,11 +264,16 @@ public class TrackingManager:MonoBehaviour {
 	 * */
 	 
 	public void trackTransaction(string productId, string purchaseMethod, float price, string currency) {
+		if (!trackingEnabled) return;
+
+		if (loggingEnabled) {
+			Debug.Log("TRACKING :: Transaction : Product [" + productId + "], purchase method [" + purchaseMethod + "], price [" + price + ", currency [" + currency + "]");
+		}
 		if (useGoogleAnalytics && googleAnalyticsTracker != null) {
 			googleAnalyticsTracker.LogTransaction(productId, purchaseMethod, price, 0.0, 0.0, currency);
 		}
 		if (useUnityAnalytics) {
-			UnityAnalytics.Transaction(purchaseMethod + "-" + productId, Convert.ToDecimal(price), currency);
+			Analytics.Transaction(purchaseMethod + "-" + productId, Convert.ToDecimal(price), currency);
 		}
 	}
 
