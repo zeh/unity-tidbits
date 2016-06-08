@@ -6,21 +6,29 @@ class ZTween {
 
 	/**
 	 * That works:
-	 * 
+	 *
 	 * .use(gameObject)
-	 * .scaleTo(Vector3, time = 0, transition = Equations.none)
 	 * .scaleFrom(Vector3)
-	 * .moveTo(Vector3, time = 0, transition = Equations.none)
+	 * .scaleTo(Vector3, time = 0, transition = Equations.none)
 	 * .moveFrom(Vector3)
+	 * .moveTo(Vector3, time = 0, transition = Equations.none)
+	 * .rotateFrom(Quaternion)
+	 * .rotateTo(Quaternion, time = 0, transition = Equations.none)
 	 * .call(Action)
 	 * .wait(time)
-	 * 
-	 * use(ref float)
+	 *
 	 * use(getter, setter)
 	 * .
 	 * //.play()
 	 * //.pause()
-	 * 
+	 *
+	 * Does not work:
+	 *
+	 * use(ref float)
+	 *
+	 * TODO: decide:
+	 * . parallellize changes? how to rotate AND move something at the same time?
+	 *
 	 */
 
 	/**
@@ -526,20 +534,62 @@ class ZTween {
 		}
 	}
 
-	// Auxiliary functions
+	class ZTweenStepRotationFrom:IZTweenStep {
 
-	class MathUtils {
-		public static float lerp(float start, float end, float t) {
-			// Lerp: needed because Mathf.lerp clamps between 0 and 1
-			return start + (end - start) * t;
+		// Properties
+		private GameObject target;
+		private Quaternion targetValue;
+
+		// Extension functions
+		public ZTweenStepRotationFrom(GameObject target, Quaternion targetValue) {
+			this.target = target;
+			this.targetValue = targetValue;
 		}
 
-		public static void applyLerp(Vector3 start, Vector3 end, float t, ref Vector3 receiver) {
-			// Lerp: needed because Mathf.lerp clamps between 0 and 1
-			// Dumps into a target to avoid GC
-			receiver.x = start.x + (end.x - start.x) * t;
-			receiver.y = start.y + (end.y - start.y) * t;
-			receiver.z = start.z + (end.z - start.z) * t;
+		public void start() { }
+
+		public void update(float t) { }
+
+		public void end() {
+			target.transform.localRotation = targetValue;
+		}
+
+		public float getDuration() {
+			return 0;
+		}
+	}
+
+	class ZTweenStepRotationTo:IZTweenStep {
+
+		// Properties
+		private GameObject target;
+		private float duration;
+		private Quaternion startValue;
+		private Quaternion targetValue;
+		private Func<float, float> transition;
+
+		// Extension functions
+		public ZTweenStepRotationTo(GameObject target, Quaternion targetValue, float duration, Func<float, float> transition) {
+			this.target = target;
+			this.duration = duration;
+			this.targetValue = targetValue;
+			this.transition = transition;
+		}
+
+		public void start() {
+			this.startValue = target.transform.localRotation;
+		}
+
+		public void update(float t) {
+			target.transform.localRotation = Quaternion.SlerpUnclamped(startValue, targetValue, transition(t));
+		}
+
+		public void end() {
+			target.transform.localRotation = targetValue;
+		}
+
+		public float getDuration() {
+			return duration;
 		}
 	}
 }
