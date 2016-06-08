@@ -2,22 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class NavigatorGO:MonoBehaviour {
+public class NavigatorManager:MonoBehaviour {
 
 	// Parameters
 	public NavigatorScene startingScene;
 
 	// Properties
-	private static NavigatorGO instance;
-
 	private bool isNavigating;
 	private NavigatorScene currentScene;
+
 
 	// ================================================================================================================
 	// MAIN EVENT INTERFACE -------------------------------------------------------------------------------------------
 
 	void Start() {
-		instance = this;
 		isNavigating = false;
 		if (startingScene != null) navigateTo(startingScene, null, true);
 	}
@@ -26,12 +24,9 @@ public class NavigatorGO:MonoBehaviour {
 
 	}
 
+
 	// ================================================================================================================
 	// PUBLIC INTERFACE -----------------------------------------------------------------------------------------------
-
-	public static NavigatorGO getInstance() {
-		return instance;
-	}
 
 	public void navigateTo(string gameObjectName) {
 		GameObject gameObject = GameObject.Find(gameObjectName);
@@ -74,7 +69,7 @@ public class NavigatorGO:MonoBehaviour {
 				// Call ending functions
 				if (currentScene != null) tween.call(currentScene.onFinishedHiding);
 				tween.call(newScene.onFinishedShowing);
-			
+
 				// Play the tween
 				tween.play();//.wait(1).call(Func).set("visible", false).play();
 			}
