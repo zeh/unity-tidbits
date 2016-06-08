@@ -296,13 +296,23 @@ class ZTween {
 			return this;
 		}
 
-		public ZTweenGameObjectSequence moveFrom(Vector3 scale) {
-			addStep(new ZTweenStepPositionFrom(targetGameObject, scale));
+		public ZTweenGameObjectSequence moveFrom(Vector3 position) {
+			addStep(new ZTweenStepPositionFrom(targetGameObject, position));
 			return this;
 		}
 
-		public ZTweenGameObjectSequence moveTo(Vector3 scale, float duration = 0, Func<float, float> transition = null) {
-			addStep(new ZTweenStepPositionTo(targetGameObject, scale, duration, getTransition(transition)));
+		public ZTweenGameObjectSequence moveTo(Vector3 position, float duration = 0, Func<float, float> transition = null) {
+			addStep(new ZTweenStepPositionTo(targetGameObject, position, duration, getTransition(transition)));
+			return this;
+		}
+
+		public ZTweenGameObjectSequence rotateFrom(Quaternion rotation) {
+			addStep(new ZTweenStepRotationFrom(targetGameObject, rotation));
+			return this;
+		}
+
+		public ZTweenGameObjectSequence rotateTo(Quaternion rotation, float duration = 0, Func<float, float> transition = null) {
+			addStep(new ZTweenStepRotationTo(targetGameObject, rotation, duration, getTransition(transition)));
 			return this;
 		}
 
