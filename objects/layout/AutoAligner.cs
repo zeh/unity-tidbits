@@ -100,12 +100,12 @@ public class AutoAligner:AutoLayoutElement {
 		// Check if it's valid
 		if (parent != null && (Alignments)anchor != Alignments.NONE && (Alignments)parentAnchor != Alignments.NONE) {
 
-			if (parent.renderer == null && parent.collider == null) {
+			if (parent.GetComponent<Renderer>() == null && parent.GetComponent<Collider>() == null) {
 				// Invalid parent
 				Debug.LogWarning("Error: GameObject must have a renderer or a collider attached to work as an Aligner parent");
 			} else {
 				// Valid parent
-				var parentBounds = parent.renderer == null ? parent.collider.bounds : parent.renderer.bounds;
+				var parentBounds = parent.GetComponent<Renderer>() == null ? parent.GetComponent<Collider>().bounds : parent.GetComponent<Renderer>().bounds;
 
 				// Find boundaries
 				float parentPos = 0;

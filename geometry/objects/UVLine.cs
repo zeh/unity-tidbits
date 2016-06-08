@@ -210,6 +210,6 @@ public class UVLine:MonoBehaviour {
 	}
 
 	private void updateColor() {
-		renderer.materials[0].color = _color;
+		GetComponent<Renderer>().materials[0].color = _color;
 	}
 }

@@ -138,12 +138,12 @@ public class AutoLayoutElement:MonoBehaviour {
 			var tl = Camera.main.ScreenToWorldPoint(new Vector3(0, Camera.main.pixelHeight, 0.1f));
 			var br = Camera.main.ScreenToWorldPoint(new Vector3(Camera.main.pixelWidth, 0, 0.1f));
 			return new Bounds((tl+br)/2, br-tl);
-		} else if (gameObject.collider != null) {
+		} else if (gameObject.GetComponent<Collider>() != null) {
 			// Use collider
-			return gameObject.collider.bounds;
-		} else if (gameObject.renderer != null) {
+			return gameObject.GetComponent<Collider>().bounds;
+		} else if (gameObject.GetComponent<Renderer>() != null) {
 			// Use renderer
-			return gameObject.renderer.bounds;
+			return gameObject.GetComponent<Renderer>().bounds;
 		}
 
 		// None found!
