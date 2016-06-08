@@ -1,3 +1,7 @@
+#if UNITY_WEBPLAYER || UNITY_WEBGL
+#define USE_PLAYER_PREFS
+#endif
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -513,7 +517,7 @@ public class PersistentData {
 	private void clearSavedStringsOrBytes(string name) {
 		// Removes a byte array or string that has been saved previously
 		// Save a string to some persistent data system
-		#if UNITY_WEBPLAYER
+		#if USE_PLAYER_PREFS
 			// Using PlayerPrefs
 			PlayerPrefs.DeleteKey(getKeyForName(name));
 		#else
@@ -524,7 +528,7 @@ public class PersistentData {
 
 	private byte[] getSavedBytes(string name) {
 		// Reads a byte array that has been saved previously
-		#if UNITY_WEBPLAYER
+		#if USE_PLAYER_PREFS
 			// Using PlayerPrefs
 			return Convert.FromBase64String(PlayerPrefs.GetString(getKeyForName(name)));
 		#else
@@ -535,7 +539,7 @@ public class PersistentData {
 
 	private void setSavedBytes(string name, byte[] value) {
 		// Save a string to some persistent data system
-		#if UNITY_WEBPLAYER
+		#if USE_PLAYER_PREFS
 			// Using PlayerPrefs
 			PlayerPrefs.SetString(getKeyForName(name), Convert.ToBase64String(value));
 		#else
@@ -546,7 +550,7 @@ public class PersistentData {
 
 	private string getSavedString(string name) {
 		// Reads a string that has been saved previously
-		#if UNITY_WEBPLAYER
+		#if USE_PLAYER_PREFS
 			// Using PlayerPrefs
 			return PlayerPrefs.GetString(getKeyForName(name));
 		#else
@@ -557,7 +561,7 @@ public class PersistentData {
 
 	private void setSavedString(string name, string value) {
 		// Save a string to some persistent data system
-		#if UNITY_WEBPLAYER
+		#if USE_PLAYER_PREFS
 			// Using PlayerPrefs
 			PlayerPrefs.SetString(getKeyForName(name), value);
 		#else
