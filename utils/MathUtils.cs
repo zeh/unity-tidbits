@@ -33,5 +33,49 @@ public class MathUtils {
 		return __value < __min ? __min : __value > __max ? __max : __value;
 	}
 	*/
+
+	/**
+	 * Clamps a value to a range, by restricting it to a minimum and maximum values but folding the value to the range instead of simply resetting to the minimum and maximum. It works like a more powerful Modulo function.
+	 * @param value	The value to be clamped.
+	 * @param min		Minimum value allowed.
+	 * @param max		Maximum value allowed.
+	 * @return			The newly clamped value.
+	 * @example Some examples:
+	 *
+	 * MathUtils.rangeMod(14, 0, 10); // 4
+	 * MathUtils.rangeMod(360, 0, 360); // 0
+	 * MathUtils.rangeMod(360, -180, 180); // 0
+	 * MathUtils.rangeMod(21, 0, 10); // 1
+	 * MathUtils.rangeMod(-98, 0, 100); // 2
+	 */
+	public static float rangeMod(float value, float min, float pseudoMax) {
+		float range = pseudoMax - min;
+		value = (value - min) % range;
+		if (value < 0) value = range - (-value % range);
+		value += min;
+		return value;
+	}
+
+	/**
+	 * Find the "distance" two item indexes are in a list. The list cycles through.
+	 * If negative, the item index is behind the base index.
+	 */
+	// TODO: better name?
+	public static float listCycleDistance(float newPosition, float basePosition, int baseLength) {
+		float posBefore, posAfter;
+
+		if (newPosition > basePosition) {
+			posBefore = - baseLength + newPosition - basePosition;
+			posAfter = newPosition - basePosition;
+		} else {
+			posBefore = newPosition - basePosition;
+			posAfter = baseLength - basePosition + newPosition;
+		}
+
+		//posBefore = posBefore % baseLength;
+		//posAfter = posAfter % baseLength;
+
+		return Mathf.Abs(posBefore) < posAfter ? posBefore : posAfter;
+	}
 }
 
