@@ -2,9 +2,9 @@ using UnityEngine;
 using System.Collections;
 
 class GameManager:MonoBehaviour {
-			
+
 	// Properties
-	private GameTimer _timer;
+	private GameLooper _looper;
 	private SceneManager _sceneManager;
 
 	private static GameManager instance;
@@ -17,7 +17,7 @@ class GameManager:MonoBehaviour {
 		DontDestroyOnLoad(gameObject);
 
 		instance = this;
-		_timer = new GameTimer();
+		_looper = new GameLooper();
 		_sceneManager = new SceneManager();
 	}
 
@@ -39,9 +39,9 @@ class GameManager:MonoBehaviour {
 	// ================================================================================================================
 	// ACCESSOR INTERFACE ---------------------------------------------------------------------------------------------
 
-	public GameTimer timer {
+	public GameLooper looper {
 		get {
-			return _timer;
+			return _looper;
 		}
 	}
 
