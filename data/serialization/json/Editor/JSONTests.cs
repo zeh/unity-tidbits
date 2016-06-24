@@ -110,7 +110,9 @@ public class JSONTests {
 		Assert.AreEqual(1, JSON.parse("1"));
 		Assert.AreEqual(0, JSON.parse("0"));
 		Assert.AreEqual(-200, JSON.parse("-200"));
-		Assert.AreEqual(-200.0, JSON.parse("-200"));
+		Assert.AreEqual(-200.0, JSON.parse("-200.0"));
+		Assert.AreEqual(200, JSON.parse("200"));
+		Assert.AreEqual(200.0, JSON.parse("200.0"));
 		Assert.AreEqual(120.1323, JSON.parse("120.1323"));
 		Assert.AreEqual(120.1323f, JSON.parse("120.1323"));
 		Assert.AreEqual(1201323L, JSON.parse("1201323"));

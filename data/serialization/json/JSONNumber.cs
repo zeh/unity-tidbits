@@ -14,7 +14,6 @@ public class JSONNumber:JSONValue {
 	private static readonly char CHAR_PLUS = '+';
 	private static readonly char CHAR_PERIOD = '.';
 	private static readonly char CHAR_ZERO = '0';
-	private static readonly List<char> CHARS_SIGNALS = new List<char>{ CHAR_MINUS, CHAR_PLUS };
 	private static readonly List<char> CHARS_DIGITS1_9 = new List<char>{ '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 	private static readonly List<char> CHARS_DIGITS = new List<char>{ '1', '2', '3', '4', '5', '6', '7', '8', '9', CHAR_ZERO };
 	private static readonly List<char> CHARS_E = new List<char>{ 'e', 'E' };
@@ -148,7 +147,7 @@ public class JSONNumber:JSONValue {
 					if (c == CHAR_MINUS) {
 						parsingString.Append(CHAR_MINUS);
 					} else if (c == CHAR_PLUS) {
-						parsingString.Append(CHAR_MINUS);
+						parsingString.Append(CHAR_PLUS);
 					} else {
 						i--;
 					}
