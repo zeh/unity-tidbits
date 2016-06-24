@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class MathUtils {
@@ -12,10 +11,10 @@ public class MathUtils {
 	}
 	*/
 
-	public static float map(float __value, float __oldMin, float __oldMax, float __newMin = 0, float __newMax = 0, bool __clamp = false) {
-		if (__oldMin == __oldMax) return __newMin;
-		float p = ((__value - __oldMin) / (__oldMax - __oldMin) * (__newMax - __newMin)) + __newMin;
-		if (__clamp) p = __newMin < __newMax ? clamp(p, __newMin, __newMax) : clamp(p, __newMax, __newMin);
+	public static float map(float value, float oldMin, float oldMax, float newMin = 0, float newMax = 1, bool clamp = false) {
+		if (oldMin == oldMax) return newMin;
+		float p = ((value - oldMin) / (oldMax - oldMin) * (newMax - newMin)) + newMin;
+		if (clamp) p = newMin < newMax ? MathUtils.clamp(p, newMin, newMax) : MathUtils.clamp(p, newMax, newMin);
 		return p;
 	}
 
@@ -25,8 +24,8 @@ public class MathUtils {
 	}
 	*/
 
-	public static float clamp(float __value, float __min = 0.0f, float __max = 1.0f) {
-		return __value < __min ? __min : __value > __max ? __max : __value;
+	public static float clamp(float value, float min = 0.0f, float max = 1.0f) {
+		return value < min ? min : value > max ? max : value;
 	}
 
 	/*
