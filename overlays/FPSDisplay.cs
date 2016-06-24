@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
- 
+
 public class FPSDisplay:MonoBehaviour {
 
 	private int frames = 0;
