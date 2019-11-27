@@ -169,7 +169,6 @@ class ApplicationChrome {
 		}
 
 		private static void setSystemUiVisibilityInThread() {
-			//Debug.Log("SYSTEM FLAGS: " + systemUiVisibilityValue);
 			using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
 				using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity")) {
 					using (var window = activity.Call<AndroidJavaObject>("getWindow")) {
@@ -189,7 +188,6 @@ class ApplicationChrome {
 		}
 
 		private static void setFlagsInThread() {
-			//Debug.Log("FLAGS: " + flagsValue);
 			using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
 				using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity")) {
 					using (var window = activity.Call<AndroidJavaObject>("getWindow")) {
