@@ -173,6 +173,10 @@ class ApplicationChrome {
 				using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity")) {
 					using (var window = activity.Call<AndroidJavaObject>("getWindow")) {
 						using (var view = window.Call<AndroidJavaObject>("getDecorView")) {
+							// We also remove the existing listener. It seems Unity uses it internally
+							// to detect changes to the visibility flags, and re-apply its own changes.
+							// For example, if we hide the navigation bar, it shows up again 1 sec later.
+							view.Call("setOnSystemUiVisibilityChangeListener", null);
 							view.Call("setSystemUiVisibility", systemUiVisibilityValue);
 						}
 					}
